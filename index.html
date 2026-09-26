@@ -1,0 +1,2107 @@
+<!doctype html>
+<html lang="zh-CN" data-page-node-id="SCCFTHaIrlICX5W6eLk5eQ">
+<head data-page-node-id="P929a6Je5FrlXp1WAVs4OV">
+<meta charset="utf-8" data-page-node-id="PPbhH2jVgyXSBLfZWQL11U">
+<meta name="viewport" content="width=device-width,initial-scale=1" data-page-node-id="BIpqVviqIWDER16gZ5InX9">
+<title>REPS 砺答 · 把每一次练习变成可比较的一 rep</title>
+<meta name="description" content="面向面试准备学生的练习工具原型：同一条标准评分，跨周可比的进步信号。" data-page-node-id="nAHx4WOZuqBXEIH6nx55LE">
+<style>
+:root{
+  --bg:#eaf0f8; --surface:#fff; --surface-2:#f6f9fd;
+  --ink:#15202b; --ink-2:#3f4f60; --muted:#6b7a8a; --faint:#93a2b1;
+  --line:#dde5ee; --line-2:#eaf0f7;
+  --brand:#2c5f8d; --brand-2:#4a86c8; --brand-ink:#1f4a70;
+  --accent:#127a67; --accent-2:#19a085;
+  --tint:#e8f0f9; --tint-2:#f3f7fc;
+  --good:#127a67; --good-bg:#e6f4f0;
+  --warn:#a9660a; --warn-bg:#fdf3e3;
+  --bad:#a63636; --bad-bg:#fbeceb;
+  --r:18px; --r-sm:12px;
+  --sh-1:0 1px 2px rgba(20,40,60,.05),0 10px 30px -16px rgba(20,40,60,.18);
+  --sh-2:0 2px 6px rgba(20,40,60,.06),0 30px 60px -28px rgba(20,40,60,.32);
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{
+  font-family:var(--sans); color:var(--ink); background:var(--bg);
+  -webkit-font-smoothing:antialiased; line-height:1.62; font-size:15px; overflow-x:hidden;
+}
+/* 极光背景 */
+body::before{
+  content:""; position:fixed; inset:0; z-index:-2; pointer-events:none;
+  background:
+    radial-gradient(900px 520px at 12% -10%, #ffffff 0%, rgba(255,255,255,0) 60%),
+    radial-gradient(820px 540px at 98% 0%, #dbe9f8 0%, rgba(219,233,248,0) 58%),
+    radial-gradient(760px 600px at 60% 120%, #e7f5f1 0%, rgba(231,245,241,0) 60%),
+    var(--bg);
+}
+body::after{
+  content:""; position:fixed; inset:-20% -10% auto -10%; height:60vh; z-index:-1; pointer-events:none;
+  background:
+    radial-gradient(420px 420px at 18% 20%, rgba(74,134,200,.18), transparent 70%),
+    radial-gradient(380px 380px at 82% 30%, rgba(25,160,133,.14), transparent 70%);
+  filter:blur(10px); opacity:.9;
+}
+h1,h2,h3,h4{margin:0; line-height:1.28; letter-spacing:-.01em}
+p{margin:0}
+button{font:inherit; color:inherit; cursor:pointer; border:0; background:none}
+code,.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.num{font-variant-numeric:tabular-nums}
+:focus-visible{outline:2px solid var(--brand-2); outline-offset:2px; border-radius:6px}
+.screen h1:focus,.screen h2:focus{outline:none}
+h1:focus,h2:focus{outline:none}
+
+/* ---------- layout ---------- */
+.app{max-width:1200px; margin:0 auto; padding:18px 26px 64px}
+.topbar{
+  display:flex; align-items:center; gap:16px; padding:10px 16px; margin:0 -16px 22px;
+  position:sticky; top:10px; z-index:30; border-radius:16px;
+  background:rgba(255,255,255,.72); backdrop-filter:blur(14px) saturate(140%);
+  border:1px solid rgba(255,255,255,.7); box-shadow:0 8px 30px -18px rgba(20,40,60,.35);
+}
+.brand{display:flex; align-items:center; gap:11px; text-decoration:none; color:inherit}
+.brand .mark{display:block; width:32px; height:32px; filter:drop-shadow(0 6px 14px rgba(44,95,141,.32))}
+.brand b{font-size:17px; letter-spacing:.14em; font-weight:750}
+.brand i{font-style:normal; font-size:14.5px; color:var(--brand); font-weight:600; margin-left:7px; letter-spacing:.08em}
+.brand .sub{display:block; font-size:10.5px; color:var(--faint); letter-spacing:.2em; text-transform:uppercase; margin-top:-1px}
+.topbar-right{margin-left:auto; display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end}
+.lang-switch{display:inline-flex; background:#eef3f9; border:1px solid var(--line); border-radius:999px; padding:3px; gap:2px}
+.lang-switch button{font-size:12.5px; font-weight:650; padding:5px 12px; border-radius:999px; color:var(--muted); transition:.18s}
+.lang-switch button.on{background:#fff; color:var(--brand-ink); box-shadow:0 2px 6px -2px rgba(20,40,60,.25)}
+.pill{
+  display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--brand-ink);
+  background:var(--tint); border:1px solid #cfe0f1; padding:5px 11px; border-radius:999px; white-space:nowrap;
+}
+.pill.pill-idle{background:#f1f4f8; border-color:var(--line); color:var(--muted)}
+.shell{display:grid; grid-template-columns:200px minmax(0,1fr); gap:30px; align-items:start}
+
+/* stepper */
+.steps{position:sticky; top:96px}
+.steps ol{list-style:none; margin:0; padding:0; position:relative}
+.steps li{position:relative; padding:0 0 18px 32px; font-size:13.5px; color:var(--faint)}
+.steps li:last-child{padding-bottom:0}
+.steps li::before{
+  content:""; position:absolute; left:6px; top:5px; width:12px; height:12px; border-radius:50%;
+  background:#fff; border:2px solid #c6d2de; transition:.25s;
+}
+.steps li::after{content:""; position:absolute; left:11px; top:19px; bottom:-1px; width:1.5px; background:var(--line)}
+.steps li:last-child::after{display:none}
+.steps li .n{display:block; font-size:10.5px; letter-spacing:.16em; color:#b3c0cd; text-transform:uppercase}
+.steps li .t{color:var(--muted); font-weight:500}
+.steps li.done::before{background:var(--good); border-color:var(--good)}
+.steps li.done::after{background:#bfe0d8}
+.steps li.done .t{color:var(--ink-2)}
+.steps li.on::before{background:var(--brand); border-color:var(--brand); box-shadow:0 0 0 5px rgba(74,134,200,.18)}
+.steps li.on .t{color:var(--brand); font-weight:700}
+.steps .note{margin-top:22px; padding:14px 15px; background:rgba(255,255,255,.8); border:1px solid var(--line-2); border-radius:var(--r-sm); font-size:12px; color:var(--muted); line-height:1.65}
+.steps .note b{color:var(--ink-2)}
+
+/* stage */
+#stage{min-height:60vh}
+.screen{display:none}
+.screen.on{display:block; animation:screenIn .42s cubic-bezier(.22,.68,.3,1) both}
+@keyframes screenIn{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+.eyebrow{
+  font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--brand-2);
+  font-weight:700; margin-bottom:11px; display:flex; align-items:center; gap:9px;
+}
+.eyebrow::after{content:""; height:1px; flex:1; background:linear-gradient(90deg,#cddced,transparent)}
+h1{font-size:clamp(30px,3.8vw,44px); font-weight:780; letter-spacing:-.03em}
+h2{font-size:clamp(23px,2.6vw,31px); font-weight:740; letter-spacing:-.02em}
+h3{font-size:15.5px; font-weight:700}
+.lede{margin-top:14px; font-size:15.5px; color:var(--ink-2); max-width:74ch}
+.lede.tight{font-size:14.5px; color:var(--muted)}
+.fineprint{margin-top:22px; font-size:12.5px; color:var(--faint); max-width:82ch; line-height:1.7}
+
+/* buttons */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  border-radius:11px; font-weight:650; font-size:14.5px; padding:10px 17px;
+  border:1px solid transparent; transition:transform .16s, box-shadow .18s, background .18s, color .18s;
+  white-space:nowrap;
+}
+.btn svg{flex:none}
+.btn.primary{background:linear-gradient(180deg,#3a6f9f,#2c5f8d); color:#fff; box-shadow:0 10px 24px -12px rgba(44,95,141,.8)}
+.btn.primary:hover{transform:translateY(-2px); box-shadow:0 18px 32px -14px rgba(44,95,141,.85)}
+.btn.primary:active{transform:translateY(0)}
+.btn.ghost{background:#fff; border-color:var(--line); color:var(--ink-2); box-shadow:var(--sh-1)}
+.btn.ghost:hover{border-color:#c3d3e3; color:var(--brand)}
+.btn.quiet{background:transparent; color:var(--brand); padding:8px 6px}
+.btn.quiet:hover{color:var(--brand-ink); text-decoration:underline; text-underline-offset:3px}
+.btn.lg{font-size:15.5px; padding:13px 23px; border-radius:13px}
+.btn.sm{font-size:12.5px; padding:6px 11px; border-radius:9px}
+.btn[disabled]{opacity:.5; cursor:not-allowed; transform:none!important; box-shadow:none}
+.cta-row{display:flex; gap:12px; flex-wrap:wrap; align-items:center; margin-top:26px}
+.linkbtn{color:var(--brand); font-size:13px; font-weight:600; padding:4px 0}
+.linkbtn:hover{text-decoration:underline; text-underline-offset:3px}
+
+/* cards */
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:20px 21px; box-shadow:var(--sh-1)}
+.card + .card{margin-top:0}
+.card h3{display:flex; align-items:center; gap:8px}
+.card h3 .en{font-size:11px; color:var(--faint); font-weight:500; letter-spacing:.1em; text-transform:uppercase}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:24px}
+.grid-3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:26px}
+.hint{font-size:12.5px; color:var(--faint); margin-top:7px}
+.card + .hint{margin-top:9px}
+
+/* stat strip */
+.stat-strip{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; margin-top:30px; background:var(--line); border:1px solid var(--line); border-radius:var(--r); overflow:hidden}
+.stat-strip div{background:#fff; padding:16px 18px}
+.stat-strip b{display:block; font-size:21px; font-weight:750; color:var(--brand); letter-spacing:-.02em}
+.stat-strip span{display:block; font-size:12.5px; color:var(--muted); margin-top:2px}
+
+/* principle cards */
+.pcard{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:18px 19px; box-shadow:var(--sh-1); transition:transform .2s, box-shadow .2s}
+.pcard:hover{transform:translateY(-3px); box-shadow:var(--sh-2)}
+.pcard .k{width:28px; height:28px; border-radius:9px; background:linear-gradient(180deg,#e8f0f9,#dcebf8); color:var(--brand); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:750; margin-bottom:12px}
+.pcard p{margin-top:7px; font-size:13.5px; color:var(--muted); line-height:1.68}
+
+/* ---------- HOME HERO (升级) ---------- */
+.hero{display:grid; grid-template-columns:1.15fr .85fr; gap:28px; align-items:center; margin-top:8px}
+.hero-main h1{background:linear-gradient(120deg,#1f4a70,#2c5f8d 55%,#19a085); -webkit-background-clip:text; background-clip:text; color:transparent}
+.hero-main .lede{margin-top:16px}
+.hero-card{
+  background:linear-gradient(160deg,#ffffff,#f4f9fe); border:1px solid #d8e6f3;
+  border-radius:22px; padding:20px; box-shadow:var(--sh-2); position:relative; overflow:hidden;
+}
+.hero-card::before{content:""; position:absolute; right:-40px; top:-40px; width:160px; height:160px; border-radius:50%; background:radial-gradient(circle,rgba(74,134,200,.18),transparent 70%)}
+.signal-preview{position:relative}
+.sp-label{font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--brand-2); font-weight:700}
+.sp-spark{margin:10px 0 4px}
+.sp-spark svg{display:block; width:100%; height:auto}
+.sp-foot{margin-top:6px; display:flex; flex-direction:column; gap:2px}
+.sp-foot b{font-size:15px; color:var(--brand-ink); font-weight:720}
+.sp-foot span{font-size:12.5px; color:var(--muted)}
+.compare{margin-top:16px; display:grid; gap:10px}
+.cmp{border-radius:12px; padding:11px 13px; border:1px solid var(--line-2); background:#fff}
+.cmp.before{border-left:3px solid #c9d5e1}
+.cmp.after{border-left:3px solid var(--accent); background:var(--good-bg)}
+.cmp span{display:block; font-size:11.5px; font-weight:700; letter-spacing:.04em; color:var(--ink-2); margin-bottom:3px}
+.cmp.before span{color:var(--muted)}
+.cmp.after span{color:var(--accent)}
+.cmp p{font-size:12.5px; color:var(--muted); line-height:1.6}
+
+/* chips */
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
+.chip{border:1px solid var(--line); background:#fff; border-radius:999px; padding:7px 14px; font-size:13.5px; color:var(--ink-2); transition:.18s}
+.chip:hover{border-color:#bfd2e5; background:var(--tint-2)}
+.chip.on{background:var(--brand); border-color:var(--brand); color:#fff; font-weight:620; box-shadow:0 6px 14px -8px rgba(44,95,141,.8)}
+
+/* radio cards */
+.radio-cards{display:grid; gap:9px; margin-top:12px}
+.rc{display:flex; gap:12px; align-items:flex-start; border:1px solid var(--line); border-radius:var(--r-sm); padding:12px 13px; background:#fff; text-align:left; transition:.18s}
+.rc:hover{border-color:#bfd2e5; background:var(--tint-2)}
+.rc .dot{width:16px; height:16px; border-radius:50%; border:2px solid #c6d2de; flex:none; margin-top:3px; transition:.18s}
+.rc b{display:block; font-size:14px; font-weight:650}
+.rc span{display:block; font-size:12.5px; color:var(--muted); margin-top:1px; line-height:1.55}
+.rc.on{border-color:var(--brand); background:var(--tint-2); box-shadow:inset 0 0 0 1px rgba(44,95,141,.25)}
+.rc.on .dot{border-color:var(--brand); background:var(--brand); box-shadow:inset 0 0 0 3px #fff}
+
+/* inputs */
+textarea,input[type=text]{
+  width:100%; font:inherit; font-size:14.5px; color:var(--ink); background:#fff;
+  border:1px solid var(--line); border-radius:var(--r-sm); padding:11px 13px; margin-top:10px;
+  resize:vertical; line-height:1.7; transition:.18s;
+}
+textarea::placeholder{color:#a9b6c3}
+textarea:focus,input:focus{outline:none; border-color:var(--brand-2); box-shadow:0 0 0 3px rgba(74,134,200,.14)}
+textarea.bad{border-color:#d99b9b; background:#fffafa}
+.counter{display:flex; justify-content:space-between; font-size:12px; color:var(--faint); margin-top:8px}
+
+/* error + notice */
+.err{display:flex; gap:10px; align-items:flex-start; margin-top:14px; padding:12px 14px; border-radius:var(--r-sm); background:var(--bad-bg); border:1px solid #eed3d1; color:#7d2b2b; font-size:13.5px}
+.err svg{flex:none; margin-top:2px}
+.err b{display:block; font-weight:700}
+.err span{display:block; color:#8f4040; font-size:12.5px; margin-top:2px}
+.note-soft{display:flex; gap:10px; align-items:flex-start; margin-top:16px; padding:12px 14px; border-radius:var(--r-sm); background:var(--tint-2); border:1px solid #dbe8f5; color:var(--brand-ink); font-size:13px}
+.note-soft b{font-weight:700}
+
+/* diagnosis result */
+.result{margin-top:22px; animation:screenIn .4s ease both}
+.diag{background:linear-gradient(160deg,#fff,#f6faff); border:1px solid #d5e4f2; border-radius:var(--r); padding:22px; box-shadow:var(--sh-1)}
+.diag .lead{font-size:13px; color:var(--muted); letter-spacing:.04em}
+.diag .big{font-size:23px; font-weight:750; color:var(--brand-ink); margin-top:6px; letter-spacing:-.02em}
+.diag p{margin-top:12px; font-size:14px; color:var(--ink-2)}
+.diag .kv{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:18px; padding-top:16px; border-top:1px solid #e4eefa}
+.diag .kv div span{display:block; font-size:11.5px; color:var(--faint); letter-spacing:.1em; text-transform:uppercase}
+.diag .kv div b{display:block; font-size:14px; margin-top:3px; font-weight:650}
+
+/* loading */
+.loading{margin-top:30px; padding:26px 24px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--sh-1)}
+.loading .rowline{display:flex; align-items:center; gap:13px}
+.spinner{width:22px; height:22px; border-radius:50%; border:2.5px solid var(--tint); border-top-color:var(--brand); animation:spin .8s linear infinite; flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading .msg{font-size:14.5px; font-weight:600; color:var(--ink-2)}
+.loading .steps-load{margin-top:18px; display:grid; gap:9px}
+.loading .steps-load div{display:flex; align-items:center; gap:9px; font-size:13px; color:var(--faint)}
+.loading .steps-load div.ok{color:var(--good)}
+.loading .steps-load .tick{width:15px; height:15px; border-radius:50%; border:1.5px solid #d5dfe9; flex:none; position:relative}
+.loading .steps-load div.ok .tick{background:var(--good); border-color:var(--good)}
+.loading .steps-load div.ok .tick::after{content:""; position:absolute; left:4.2px; top:1.2px; width:4px; height:7.5px; border:1.6px solid #fff; border-top:0; border-left:0; transform:rotate(42deg)}
+.skel{height:12px; border-radius:6px; background:linear-gradient(90deg,#eef3f8,#e2eaf3,#eef3f8); background-size:220% 100%; animation:shimmer 1.25s linear infinite; margin-top:12px}
+@keyframes shimmer{from{background-position:110% 0} to{background-position:-110% 0}}
+
+/* question */
+.qcard{margin-top:24px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--sh-2); overflow:hidden}
+.qcard .qhead{display:flex; align-items:center; gap:10px; padding:14px 22px; background:var(--tint-2); border-bottom:1px solid var(--line-2); font-size:12.5px; color:var(--brand-ink); flex-wrap:wrap}
+.qcard .qhead .tag{background:#fff; border:1px solid #d3e3f2; border-radius:999px; padding:3px 10px; font-weight:650}
+.qcard .qbody{padding:24px 22px 22px}
+.qcard .qtext{font-size:19px; font-weight:640; line-height:1.6; letter-spacing:-.01em}
+.followups{margin-top:20px; padding-top:18px; border-top:1px dashed var(--line)}
+.followups h4{font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--faint); font-weight:700}
+.followups ol{margin:11px 0 0; padding-left:20px; color:var(--ink-2); font-size:14px}
+.followups li + li{margin-top:7px}
+.timer{display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--muted); margin-top:20px}
+.timer b{font-variant-numeric:tabular-nums; color:var(--brand); font-size:14px}
+
+/* answer */
+.answer-wrap{margin-top:24px}
+.mic-row{display:flex; align-items:center; gap:12px; margin-top:12px; flex-wrap:wrap}
+.mic{display:inline-flex; align-items:center; gap:9px; border:1px solid var(--line); background:#fff; border-radius:999px; padding:8px 15px; font-size:13.5px; color:var(--ink-2); transition:.18s}
+.mic:hover{border-color:#bfd2e5; color:var(--brand)}
+.mic.rec{border-color:#e3b9b9; background:var(--bad-bg); color:#8f3a3a}
+.wave{display:none; align-items:flex-end; gap:2.5px; height:15px}
+.mic.rec .wave{display:flex}
+.wave i{width:3px; background:#c06a6a; border-radius:2px; animation:wv .9s ease-in-out infinite}
+.wave i:nth-child(1){height:6px; animation-delay:0s}
+.wave i:nth-child(2){height:13px; animation-delay:.12s}
+.wave i:nth-child(3){height:9px; animation-delay:.24s}
+.wave i:nth-child(4){height:14px; animation-delay:.36s}
+.wave i:nth-child(5){height:7px; animation-delay:.48s}
+@keyframes wv{0%,100%{transform:scaleY(.4)} 50%{transform:scaleY(1.15)}}
+.ctx-mini{margin-top:20px; padding:13px 15px; background:var(--surface-2); border:1px solid var(--line-2); border-radius:var(--r-sm); font-size:12.5px; color:var(--muted); line-height:1.7}
+.ctx-mini b{color:var(--ink-2); font-weight:650}
+
+/* score */
+.score-hero{display:grid; grid-template-columns:auto 1fr; gap:26px; align-items:center; margin-top:24px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:26px; box-shadow:var(--sh-1)}
+.gauge{position:relative; width:184px; height:184px; flex:none; filter:drop-shadow(0 14px 30px rgba(44,95,141,.25))}
+.gauge svg{transform:rotate(-90deg)}
+.gauge .val{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center}
+.gauge .val b{font-size:48px; font-weight:780; letter-spacing:-.04em; line-height:1; font-variant-numeric:tabular-nums; color:var(--brand-ink)}
+.gauge .val span{font-size:11.5px; color:var(--faint); letter-spacing:.14em; text-transform:uppercase; margin-top:5px}
+.score-meta .lvl{display:inline-flex; align-items:center; gap:7px; font-size:13px; font-weight:650; padding:4px 12px; border-radius:999px; background:var(--good-bg); color:var(--good)}
+.score-meta .lvl.mid{background:var(--warn-bg); color:var(--warn)}
+.score-meta .lvl.low{background:var(--bad-bg); color:var(--bad)}
+.score-meta h3{margin-top:13px; font-size:17px}
+.score-meta p{margin-top:8px; font-size:13.5px; color:var(--muted); line-height:1.7}
+.delta-chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px}
+.dchip{font-size:12.5px; padding:4px 11px; border-radius:999px; border:1px solid var(--line); background:#fff; color:var(--ink-2); font-variant-numeric:tabular-nums}
+.dchip.up{border-color:#bfe0d8; background:var(--good-bg); color:var(--good); font-weight:650}
+.dchip.down{border-color:#eed3d1; background:var(--bad-bg); color:var(--bad); font-weight:650}
+.dims{margin-top:22px; display:grid; gap:14px}
+.dim{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-sm); padding:15px 17px; box-shadow:var(--sh-1)}
+.dim .top{display:flex; align-items:baseline; gap:10px}
+.dim .top b{font-size:14.5px; font-weight:680}
+.dim .top .en{font-size:10.5px; color:var(--faint); letter-spacing:.12em; text-transform:uppercase}
+.dim .top .sc{margin-left:auto; font-size:16px; font-weight:730; font-variant-numeric:tabular-nums; color:var(--brand-ink)}
+.dim .top .sc em{font-style:normal; font-size:11.5px; color:var(--faint); font-weight:500}
+.track{height:8px; border-radius:99px; background:#eef2f7; margin-top:11px; overflow:hidden}
+.track i{display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#4a86c8,#2c5f8d); width:0; transition:width .95s cubic-bezier(.2,.7,.25,1)}
+.track i.weak{background:linear-gradient(90deg,#d8a24a,#b07d1e)}
+.dim .fb{font-size:12.5px; color:var(--muted); margin-top:9px; line-height:1.62}
+.rule-row{display:grid; grid-template-columns:repeat(3,1fr); gap:1px; margin-top:22px; background:var(--line); border:1px solid var(--line); border-radius:var(--r-sm); overflow:hidden}
+.rule-row div{background:#fff; padding:13px 15px}
+.rule-row span{display:block; font-size:11px; color:var(--faint); letter-spacing:.12em; text-transform:uppercase}
+.rule-row b{display:block; font-size:13.5px; margin-top:3px; font-weight:640}
+
+/* fixes */
+.fixes{margin-top:22px; display:grid; gap:12px}
+.fix{display:flex; gap:14px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-sm); padding:16px 18px; box-shadow:var(--sh-1)}
+.fix .idx{width:26px; height:26px; flex:none; border-radius:8px; background:var(--tint); color:var(--brand); display:flex; align-items:center; justify-content:center; font-weight:750; font-size:12.5px}
+.fix b{font-size:14.5px; font-weight:680}
+.fix p{font-size:13px; color:var(--muted); margin-top:5px; line-height:1.68}
+
+/* chart */
+.chart-wrap{background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--sh-1); padding:20px 18px 10px; margin-top:22px; overflow:hidden}
+.chart-wrap svg{display:block; width:100%; height:auto}
+.sig{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:20px}
+.sig .card{padding:17px 18px}
+.sig .card b{display:block; font-size:26px; font-weight:760; letter-spacing:-.03em; color:var(--brand); font-variant-numeric:tabular-nums}
+.sig .card span{font-size:12.5px; color:var(--muted); display:block; margin-top:3px}
+.sig .card em{display:block; font-style:normal; font-size:12.5px; margin-top:8px; color:var(--ink-2)}
+.dbars{margin-top:22px; display:grid; gap:11px}
+.dbar{display:grid; grid-template-columns:88px 1fr 44px 62px; gap:12px; align-items:center; font-size:13px}
+.dbar .dl{color:var(--ink-2); font-weight:600}
+.dbar .dt{height:7px; border-radius:99px; background:#eef2f7; overflow:hidden}
+.dbar .dt i{display:block; height:100%; border-radius:99px; background:#8fb4d6; width:0; transition:width .9s cubic-bezier(.2,.7,.25,1)}
+.dbar b{text-align:right; font-variant-numeric:tabular-nums; font-weight:680}
+.dbar em{font-style:normal; font-size:12px; text-align:right; font-variant-numeric:tabular-nums}
+.dbar em.up{color:var(--good); font-weight:650}
+.dbar em.down{color:var(--bad); font-weight:650}
+.dbar em.flat{color:var(--faint)}
+
+/* empty */
+.empty{margin-top:26px; text-align:center; padding:44px 26px; background:var(--surface); border:1px dashed #cfdbe7; border-radius:var(--r)}
+.empty .ico{width:52px; height:52px; margin:0 auto 16px; border-radius:14px; background:var(--tint-2); display:flex; align-items:center; justify-content:center}
+.empty h3{font-size:17px}
+.empty p{font-size:13.5px; color:var(--muted); margin-top:9px; max-width:46ch; margin-left:auto; margin-right:auto; line-height:1.7}
+
+/* gate */
+.gate{margin-top:24px; display:grid; grid-template-columns:200px 1fr; gap:24px; align-items:center; background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:24px; box-shadow:var(--sh-1)}
+.gate .ring{position:relative; width:150px; height:150px; margin:0 auto}
+.gate .ring .val{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center}
+.gate .ring .val b{font-size:34px; font-weight:760; color:var(--brand-ink); letter-spacing:-.03em; font-variant-numeric:tabular-nums}
+.gate .ring .val span{font-size:11.5px; color:var(--faint); letter-spacing:.1em; text-transform:uppercase; margin-top:4px}
+.rules{margin-top:20px; display:grid; gap:10px}
+.rulerow{display:flex; gap:13px; align-items:flex-start; padding:13px 15px; border:1px solid var(--line-2); background:var(--surface-2); border-radius:var(--r-sm)}
+.rulerow .st{width:8px; height:8px; border-radius:50%; background:#c9d5e1; margin-top:8px; flex:none}
+.rulerow.hit .st{background:var(--good); box-shadow:0 0 0 4px rgba(18,122,103,.13)}
+.rulerow b{font-size:14px; font-weight:650; display:block}
+.rulerow p{font-size:12.5px; color:var(--muted); margin-top:3px; line-height:1.62}
+.switch-row{display:flex; align-items:center; gap:14px; margin-top:22px; padding:15px 17px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-sm); box-shadow:var(--sh-1)}
+.switch-row .txt{flex:1}
+.switch-row b{font-size:14px; font-weight:650}
+.switch-row p{font-size:12.5px; color:var(--muted); margin-top:3px}
+.switch{width:46px; height:26px; border-radius:99px; background:#d7e0e9; position:relative; flex:none; transition:.22s; border:0}
+.switch::after{content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.18); transition:.22s}
+.switch.on{background:var(--brand)}
+.switch.on::after{transform:translateX(20px)}
+
+/* drawer */
+.scrim{position:fixed; inset:0; background:rgba(16,28,40,.34); opacity:0; pointer-events:none; transition:.28s; z-index:40; backdrop-filter:blur(2px)}
+.scrim.on{opacity:1; pointer-events:auto}
+.drawer{
+  position:fixed; top:0; right:0; height:100%; width:min(560px,94vw); background:#fff; z-index:41;
+  transform:translateX(102%); transition:transform .34s cubic-bezier(.3,.7,.2,1); overflow-y:auto;
+  box-shadow:-24px 0 60px -30px rgba(16,28,40,.4); border-left:1px solid var(--line);
+}
+.drawer.on{transform:none}
+.drawer .dhead{display:flex; align-items:center; gap:12px; padding:20px 24px; border-bottom:1px solid var(--line-2); position:sticky; top:0; background:rgba(255,255,255,.94); backdrop-filter:blur(8px); z-index:2}
+.drawer .dhead h3{font-size:16px}
+.drawer .dbody{padding:22px 24px 60px}
+.drawer h4{margin-top:26px; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:var(--faint); font-weight:750}
+.drawer h4:first-child{margin-top:0}
+.dtable{width:100%; border-collapse:collapse; margin-top:12px; font-size:13px}
+.dtable th,.dtable td{border:1px solid var(--line-2); padding:9px 11px; text-align:left; vertical-align:top}
+.dtable th{background:var(--surface-2); font-weight:650; color:var(--ink-2); font-size:12.5px}
+.dtable td.t{white-space:nowrap; color:var(--brand-ink); font-weight:600}
+.dlist{margin:12px 0 0; padding-left:20px; font-size:13.5px; color:var(--ink-2); line-height:1.75}
+.dlist li + li{margin-top:5px}
+.dlist .ok{color:var(--good); font-weight:650}
+.toggles{display:grid; gap:9px; margin-top:14px}
+.toggle-row{display:flex; align-items:center; gap:12px; border:1px solid var(--line); border-radius:var(--r-sm); padding:12px 14px; background:var(--surface-2)}
+.toggle-row .txt{flex:1}
+.toggle-row b{font-size:13.5px; font-weight:650; display:block}
+.toggle-row span{font-size:12px; color:var(--muted)}
+.dotind{width:9px; height:9px; border-radius:50%; background:#ccd6e0; flex:none}
+.dotind.on{background:var(--bad)}
+
+/* toast */
+.toast{
+  position:fixed; left:50%; bottom:28px; transform:translate(-50%,20px); z-index:60;
+  background:#1d2b39; color:#fff; font-size:13.5px; padding:11px 18px; border-radius:11px;
+  box-shadow:0 18px 40px -18px rgba(16,28,40,.7); opacity:0; pointer-events:none; transition:.26s;
+  display:flex; align-items:center; gap:9px; max-width:min(560px,90vw);
+}
+.toast.on{opacity:1; transform:translate(-50%,0)}
+
+/* auth modal */
+.modal{position:fixed; z-index:60; top:50%; left:50%; transform:translate(-50%,-46%) scale(.98); width:min(400px, calc(100vw - 32px));
+  background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:0 30px 80px -30px rgba(16,28,40,.5);
+  opacity:0; pointer-events:none; transition:.24s}
+.modal.on{opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1)}
+.modal .mhead{display:flex; align-items:center; gap:12px; padding:18px 20px 4px}
+.modal .mhead h3{font-size:17px; flex:1}
+.mtabs{display:flex; gap:6px; background:#eef3f9; margin:0 20px 2px; border-radius:999px; padding:3px}
+.mtabs button{flex:1; padding:6px 0; font-size:13px; font-weight:650; color:var(--muted); border-radius:999px; transition:.18s}
+.mtabs button.on{background:#fff; color:var(--brand-ink); box-shadow:0 2px 6px -2px rgba(20,40,60,.22)}
+#btnAuth.on{border-color:var(--brand); color:var(--brand-ink); background:#f0f6ff}
+.mbody{padding:14px 20px 20px}
+.mbody label{display:block; font-size:11.5px; color:var(--faint); letter-spacing:.05em; margin:12px 0 6px; font-weight:700}
+.mbody input{width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:#fbfdff; color:var(--ink)}
+.mbody input:focus{outline:none; border-color:var(--brand); box-shadow:0 0 0 3px rgba(58,124,247,.12)}
+.mbody .btn{margin-top:18px; width:100%}
+.mnote{margin-top:12px; font-size:11.5px; color:var(--faint); line-height:1.65}
+
+/* footer */
+.foot{margin-top:54px; padding-top:20px; border-top:1px solid var(--line); font-size:12px; color:var(--faint); display:flex; gap:16px; flex-wrap:wrap; justify-content:space-between}
+.foot a{color:var(--muted)}
+
+@media (max-width:900px){
+  .app{padding:14px 16px 48px}
+  .topbar{position:static; margin:0 0 18px; padding:10px 12px}
+  .shell{grid-template-columns:1fr; gap:20px}
+  .steps{position:static}
+  .steps ol{display:flex; gap:6px; overflow-x:auto; padding-bottom:4px}
+  .steps li{padding:0 0 0 22px; white-space:nowrap; font-size:12.5px}
+  .steps li::after{display:none}
+  .steps li::before{left:2px; top:4px; width:9px; height:9px}
+  .steps li .n{display:none}
+  .steps .note{display:none}
+  .hero{grid-template-columns:1fr; gap:20px}
+  .grid-2,.grid-3,.stat-strip,.sig,.rule-row,.diag .kv{grid-template-columns:1fr}
+  .score-hero{grid-template-columns:1fr; justify-items:center; text-align:center}
+  .score-meta{text-align:center}
+  .delta-chips{justify-content:center}
+  .gate{grid-template-columns:1fr; text-align:center}
+  .rules,.switch-row{text-align:left}
+  .dbar{grid-template-columns:70px 1fr 40px 54px; gap:8px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001s!important; transition-duration:.001s!important}
+}
+</style>
+</head>
+<body data-page-node-id="KFXgBZOp6uuCMXJdL0e2Iq">
+<div class="app" data-page-node-id="dYzYp1W05B6vilbTlUyIne">
+
+  <header class="topbar" data-page-node-id="uiMk5HREx93NcPKVuP5gvK">
+    <a class="brand" href="#" data-go="home" aria-label="回到首页" data-page-node-id="ZDKGDG2jwmN6kUkCgCyhug">
+      <svg class="mark" viewBox="0 0 28 28" aria-hidden="true" data-page-node-id="b2EpLRzlsNIjfXScO3Ixbr">
+        <rect x="1" y="1" width="26" height="26" rx="8" fill="#2c5f8d" data-page-node-id="Ngo6blVqBugwYzWXcGNebs"/>
+        <path d="M7 18.6l4.1-4.5 3.3 3.1L20.8 10" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="EUP75jc6DL6zPmvNosUAcS"/>
+        <circle cx="20.8" cy="10" r="2.2" fill="#9fd0f5" data-page-node-id="jfEnXg34SXqw5pIHo91v6s"/>
+      </svg>
+      <span data-page-node-id="2WzY1PEKXDaTKJ2yESl4CV">
+        <b data-page-node-id="RfFMSibZ5OpcyVgPT7PDAJ">REPS</b><i data-page-node-id="GOUpQTinDVXVw2qo5O9Jfn">砺答</i>
+        <span class="sub" data-i18n="brand.sub" data-page-node-id="cSVEhrS8LbscbXvB7Ph9UC">可比的练习</span>
+      </span>
+    </a>
+    <div class="topbar-right" data-page-node-id="fUP0InpLBZRzkrIUbkHM7N">
+      <div class="lang-switch" role="group" aria-label="语言 / Language" data-page-node-id="FZ6MZvJ459U0IFU87sw7aB">
+        <button data-lang="zh" class="on" data-page-node-id="lke8DO1qRtCdPc1OAQy7vX">中文</button>
+        <button data-lang="en" data-page-node-id="rv7Xq7W3m0jfQGvunmAwUT">EN</button>
+      </div>
+      <span class="pill pill-idle" id="ctxPill" data-page-node-id="b1cCMKBAxKomec0oMEAMAE">尚未选择岗位</span>
+      <button class="btn ghost sm" id="btnAuth" title="登录 / 注册">
+        <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><circle cx="8" cy="5.4" r="2.6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3.2 13c.6-2.4 2.6-3.6 4.8-3.6s4.2 1.2 4.8 3.6" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span data-i18n="auth.btn">登录 / 注册</span>
+      </button>
+      <button class="btn ghost sm" id="btnHome" data-i18n="btn.home" data-page-node-id="RDKGrlrO2SNQAvhjUOv8GE">回到首页</button>
+      <button class="btn ghost sm" id="btnDrawer" data-page-node-id="fx1RSjH6MjsEuZKBX0habx">
+        <svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true" data-page-node-id="0iaQUtzmT8iLYflDoW6xvf"><circle cx="8" cy="8" r="6.4" fill="none" stroke="currentColor" stroke-width="1.5" data-page-node-id="XObflxTQqknHzBDyZkhjWg"/><path d="M8 7.3v3.4M8 5.3v.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" data-page-node-id="uSDI5eb1batmnWorTDfoNw"/></svg>
+        <span data-i18n="btn.design" data-page-node-id="fOxoYtWWXOl809EiqCxIqy">设计说明</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="shell" data-page-node-id="wbxpbNoI9UhzF71dy154JZ">
+    <nav class="steps" aria-label="练习流程" data-i18n-aria="steps.aria" data-page-node-id="3IxwWoiK1M7lNm6OgY1GRF">
+      <ol id="stepper" data-page-node-id="jCzf0c23QoNVNKyGHqq9zM"></ol>
+      <div class="note" data-page-node-id="NSBHdJ96jp8qMI0AuE8gXm">
+        <b data-i18n="steps.noteB" data-page-node-id="JwFaOpT5XPVX4CvgmKGtG0">一条标准，跨周可比。</b><br data-page-node-id="qBiz5AJ2cOaL0nnCEJGJ8q">
+        <span data-i18n="steps.note" data-page-node-id="uXffOHwOlBXXxA5lRQvF0H">岗位、量表、题目类别三者不变，分数才有比较的意义 —— 这是这个原型唯一想验证的事。</span>
+      </div>
+    </nav>
+
+    <main id="stage" aria-live="polite" data-page-node-id="pMN2waeHJbJD0swydUQU4A">
+
+      <!-- ============ 0 · 入口 ============ -->
+      <section class="screen on" id="s-home" data-screen="home" data-page-node-id="kI3uAzgueVwr8A5oU9rMn3">
+        <p class="eyebrow" data-i18n="home.eyebrow" data-page-node-id="SQASjXusgmiIMfL1DpXwhQ">Stage 1 · 第一个可点击原型</p>
+        <div class="hero" data-page-node-id="HCQtNId1INMAN0Z3iCdU8d">
+          <div class="hero-main" data-page-node-id="IthRNrETfpm45F0GTqP7WD">
+            <h1 data-i18n-html="home.title" data-page-node-id="JlFECwUufDR7qnptuTNgJV">把每一次练习，<br data-page-node-id="nh104NsBYnhNpvp49MFUSW">变成可比较的一 rep。</h1>
+            <p class="lede" data-i18n-html="home.lede" data-page-node-id="atkLDtb4FCtsv79nRcE0IP">面向面试准备学生的练习工具。它不教你怎么答题，只做一件事：用<b data-page-node-id="hmtTKrG2gqytMSWHiU533M">同一条标准</b>给你的每一次作答打分，让你在周与周之间看见自己真的变强了 —— 或者，至少知道自己还差在哪。</p>
+            <div class="cta-row" data-page-node-id="XaF6QiM70HU1Ci4UMARm44">
+              <button class="btn primary lg" data-go="diagnose" data-page-node-id="cZMRAOMZa1fVZyslpBkjy0">
+                <span data-i18n="home.start" data-page-node-id="LWKSkm8q4nQFIDWVIQodA1">开始今天的一 rep</span>
+                <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" data-page-node-id="KSV9I6C2jupNh0G0xGbgZx"><path d="M2.5 8h10M9 4.6L12.4 8 9 11.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="tCEfwOvKGRC49fbzjDpyCv"/></svg>
+              </button>
+              <button class="btn ghost lg" id="btnDemoHome" data-i18n="home.demo" data-page-node-id="CIbupA9znEoyqN9IACiOCg">载入演示数据（3 周历史）</button>
+              <button class="btn quiet" id="btnResumeHome" hidden data-i18n="home.resume" data-page-node-id="aId2At0OPAKFHUFZDmyEKN">继续查看上次结果</button>
+            </div>
+
+            <div class="stat-strip" data-page-node-id="TcK7B90W4Q82EON0oWSOpz">
+              <div data-page-node-id="or1aH7vMxp1Qc7Y21Ev3KN"><b data-i18n="stat.dimT" data-page-node-id="SBIDBkVEf2C75qJJaitaKF">4 个维度</b><span data-i18n="stat.dimS" data-page-node-id="q9Rz0ftgRwuKlyt314N17u">结构 · 论据 · 岗位相关度 · 表达，每项 25 分</span></div>
+              <div data-page-node-id="kH7BWXmvKdDBm4dFFKRVqn"><b data-i18n="stat.stdT" data-page-node-id="ak3fWA0RWJ5l61KGAj3vDw">1 条标准</b><span data-i18n="stat.stdS" data-page-node-id="6FoNga4CLt2RFLZntmD5fm">同一量表反复使用，分数才可比</span></div>
+              <div data-page-node-id="kdblR5XUCtxDuA5DEc5S5o"><b data-i18n="stat.weekT" data-page-node-id="LbS1lhRnDWKX1zcYIXyuI4">周维度</b><span data-i18n="stat.weekS" data-page-node-id="flF0Vhn7leWgB5UKKaGzEz">不比单次高低，只看是否在往上走</span></div>
+            </div>
+          </div>
+
+          <aside class="hero-card" data-page-node-id="yzSqZ281Vgx0RFo2Jow3k5">
+            <div class="signal-preview" data-page-node-id="GKJw8xCSVTd7DoOOVI02BU">
+              <span class="sp-label" data-i18n="home.spLabel" data-page-node-id="Vx1mPDAOlNrRBBij6oq3ws">本周进步信号 · 演示趋势</span>
+              <div class="sp-spark" id="spSpark" data-page-node-id="gBykFfv2OCsVt3EMkqElhw"></div>
+              <div class="sp-foot" data-page-node-id="n0HXxm5ywdO3JknRHLFbnS">
+                <b data-i18n="home.spFoot1" data-page-node-id="lNOCcAm3G1GqeNNMCLYM5G">同一标准，跨周可比</b>
+                <span data-i18n="home.spFoot2" data-page-node-id="k1KIvTEkqi7tgW55Jfojk8">这不是评分软件，是一条可比的进步曲线。</span>
+              </div>
+            </div>
+            <div class="compare" data-page-node-id="TsYGomNMa1zaB0y1HgUVg9">
+              <div class="cmp before" data-page-node-id="tOn35GcJUegSxouwGHp7jD">
+                <span data-i18n="home.cmpBeforeH" data-page-node-id="32pB755FukpObvHZESXfO4">没有它的时候</span>
+                <p data-i18n="home.cmpBeforeD" data-page-node-id="2e5mkdGVxIaLQFGvlEaFoH">练了很久，却说不清自己到底有没有变强；每次都用不同标准，分数没法比。</p>
+              </div>
+              <div class="cmp after" data-page-node-id="CVhnHdZMQtjSy9sJN7uz2c">
+                <span data-i18n="home.cmpAfterH" data-page-node-id="MnPtZvxXoWxhMXdBYksSsH">有了 REPS 之后</span>
+                <p data-i18n="home.cmpAfterD" data-page-node-id="ZSnmy7PTyrTENQXHGQARtK">同样的岗位、同样的量表，每次读数都能和上次相减 —— 进步看得见，短板也藏不住。</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <div class="grid-3" data-page-node-id="XjIHuodqJfYZscYQOBrxu6">
+          <div class="pcard" data-page-node-id="cnCpyvcA05PEPB2bI83Xjg">
+            <div class="k" data-page-node-id="PYWZzaLFICgH7KkAUvHGPP">01</div>
+            <h3 data-i18n="pc1.t" data-page-node-id="h2gJ4wxTc8db1yA1cCK97B">先诊断，再出题</h3>
+            <p data-i18n="pc1.d" data-page-node-id="FONXh5df8DiQ3fGI3KBqGo">不问你想练什么，先判断你最可能在哪儿丢分，题目按卡点生成 —— 借用 AINA「先诊断再建议」的顺序。</p>
+          </div>
+          <div class="pcard" data-page-node-id="9bbFpCN3cNpjRiXLn0MazV">
+            <div class="k" data-page-node-id="TEFs7kqHuBn6KcOeUsUx6S">02</div>
+            <h3 data-i18n="pc2.t" data-page-node-id="hhm62iU2JgwUIuu8RZZvIx">同一标准，才可比较</h3>
+            <p data-i18n="pc2.d" data-page-node-id="2P2RbHxHg2ecg2va9Li74G">每次作答都按同一套量表打分，并记录在案。竞争壁垒不是通用 AI 能力，而是这条标准的稳定性。</p>
+          </div>
+          <div class="pcard" data-page-node-id="5y1dRkfjQFiNr1pgEeVlOC">
+            <div class="k" data-page-node-id="ezKcIfjYRDeid2dv2IYGmz">03</div>
+            <h3 data-i18n="pc3.t" data-page-node-id="4CkGBdmFsG6UeNA0XR45qC">达标即退场</h3>
+            <p data-i18n="pc3.d" data-page-node-id="jnGUmffeE0iFjl02s8v38T">连续达标后，工具主动减少打扰、建议你去面试。它的任务不是留住你，是证明这一周没有白练。</p>
+          </div>
+        </div>
+
+        <p class="fineprint" data-i18n-html="fineprint" data-page-node-id="9RGHf0dnuPOBmpuukMVLzj">演示原型：题目、评分与历史数据均为演示内容，评分由本地规则计算。</p>
+      </section>
+
+      <!-- ============ 1 · 诊断 ============ -->
+      <section class="screen" id="s-diagnose" data-screen="diagnose" data-page-node-id="FEDwIM0kehXZyAgc49dH36">
+        <p class="eyebrow" data-i18n="diag.eyebrow" data-page-node-id="Y6kV1F9RoYnch9AhVcjTUz">Step 1 / 6 · 诊断卡点</p>
+        <h2 tabindex="-1" data-i18n="diag.h2" data-page-node-id="4gmu3oinEhh9HE6hY6R0V2">先找卡点，再出题</h2>
+        <p class="lede tight" data-i18n="diag.lede" data-page-node-id="5sGJ3OWKqvFeDaXYEUtfHZ">三选一：告诉它你要面什么岗、你的背景、以及凭直觉最可能丢分的地方。诊断会决定今天这道题重点校验哪个维度。</p>
+
+        <div class="grid-2" data-page-node-id="LW5zcR6ZcPj1s3aflTYEhk">
+          <div class="card" data-page-node-id="fYoFdFlq5W0ci9ySejewzo">
+            <h3 data-page-node-id="BNmZARCGA0FLZhGNI8ESLQ"><span data-i18n="diag.roleH" data-page-node-id="6ycFZAz9WHBC9u0rld2rEN">目标岗位</span> <span class="en" data-i18n="diag.roleEn" data-page-node-id="3dJoP743G1FHxC2TDnAWwB">Role</span></h3>
+            <div class="chips" id="roleChips" data-page-node-id="GyoA2YIsNEAJtgKywhdgVl"></div>
+            <h3 style="margin-top:22px" data-page-node-id="LMT4njdokhgLLmDkXH84UJ"><span data-i18n="diag.bgH" data-page-node-id="BVUoiYq9R4tI6Ru85XfoWP">背景要点</span> <span class="en" data-i18n="diag.bgEn" data-page-node-id="LOJi4QgxcGP8KXTVrDLS01">Background</span></h3>
+            <textarea id="bgInput" rows="4" data-i18n-ph="diag.bgPh"></textarea>
+            <div class="counter" data-page-node-id="uDuxSylYZaVnfE8GU9zhtZ"><span data-i18n="diag.bgHint" data-page-node-id="GmLyijhy1Pgj5apqXYbT1I">一两句话即可，只用于让题目贴近你的真实经历</span></div>
+            <button class="linkbtn" id="btnFillBg" data-i18n="diag.fillBg" data-page-node-id="E51gXVHHzeYe2DJjdh4p7D">填入示例背景</button>
+          </div>
+
+          <div class="card" data-page-node-id="wXviylZBaFUU2ubBpcIRKB">
+            <h3 data-page-node-id="QhZPIYty8b9Oog03fb7kJu"><span data-i18n="diag.gapH" data-page-node-id="y595eEdH8ChAXx0Txd4S4c">卡点自评</span> <span class="en" data-i18n="diag.gapEn" data-page-node-id="OC8WBVdnoqRwhinF3efZsN">Self-check</span></h3>
+            <p class="hint" data-i18n="diag.gapHint" data-page-node-id="jINzej5pHSw03TZQJSpqLO">四选一。选不准也没关系，先凭直觉 —— 评分之后我们再校准。</p>
+            <div class="radio-cards" id="gapList" data-page-node-id="gAp9NysuVEW7XylGTR2CHt"></div>
+          </div>
+        </div>
+
+        <div class="err" id="diagErr" hidden data-page-node-id="dIXljO6SPDP2dfD5y5BaGN">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" data-page-node-id="FRiMf94q6H17naKGcnEzEB"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.5" data-page-node-id="pImdmfom57YPBIclu0BJrh"/><path d="M8 4.6v4.2M8 11.2v.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" data-page-node-id="5uRDTJIWPVghuc7mNhZB8Q"/></svg>
+          <div data-page-node-id="pXIb4CKR59o3kGMqWmTI86"><b id="diagErrT" data-page-node-id="AAQYisUuEjdIFdYsqrFa8v">还差一点信息</b><span id="diagErrD" data-page-node-id="uooEnOcYK6jYFJZwfPuAUn"></span></div>
+        </div>
+
+        <div class="cta-row" data-page-node-id="9kDUGGjpNqMy6Cy1KIdfMq">
+          <button class="btn primary lg" id="btnDiagnose" data-i18n="diag.gen" data-page-node-id="cyRLPrBFyLAqoFFGGB13V9">生成诊断结果</button>
+          <button class="btn quiet" data-go="home" data-i18n="diag.back" data-page-node-id="HcS61yFNctUGOdnJ8ID7yl">返回首页</button>
+        </div>
+
+        <div class="result" id="diagResult" hidden data-page-node-id="t2jVpogzjlP9rhakX1UTF1"></div>
+      </section>
+
+      <!-- ============ 2 · 出题 ============ -->
+      <section class="screen" id="s-question" data-screen="question" data-page-node-id="HkOvZJSoxygPuimnXQ956i">
+        <p class="eyebrow" data-i18n="q.eyebrow" data-page-node-id="9qKZbb7WZzNgGIZqJn7COF">Step 2 / 6 · 出题</p>
+        <h2 tabindex="-1" data-i18n="q.h2" data-page-node-id="I9Y9MAVBctrUtNfoQ2yAXF">按你的岗位与卡点生成题目</h2>
+        <p class="lede tight" id="qLede" data-i18n="q.lede" data-page-node-id="AWAz1PR6BmKo0B9aAQ7ikl">同一岗位用同一套题库，保证不同时间的练习可比。</p>
+
+        <div class="loading" id="qLoading" data-page-node-id="Dwn5HFo5MGbKPeCLoLkdPT">
+          <div class="rowline" data-page-node-id="wF9CbjiIcxbDl5W5upkVUT"><span class="spinner" aria-hidden="true" data-page-node-id="UNoO6te1RrYSJwAhhCVe4L"></span><span class="msg" id="qMsg" data-i18n="q.loadMsg" data-page-node-id="fbEArAOHPTF68tTlCXIaGe">正在准备题库…</span></div>
+          <div class="steps-load" id="qSteps" data-page-node-id="oZOngkzqUBAt2bU6Q3n4ks"></div>
+        </div>
+
+        <div id="qFail" hidden data-page-node-id="XUC94EfS47sBbSlCLjafDL">
+          <div class="err" style="margin-top:26px" data-page-node-id="jVVLDeK3fVpjptJ94EQ2gb">
+            <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" data-page-node-id="C9E7jERx3GBNjSEVADVGAq"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.5" data-page-node-id="Tgg1sxyCUABMy6ufAvEwrE"/><path d="M8 4.6v4.2M8 11.2v.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" data-page-node-id="5dwhcf2CRnENeGt6mqNvha"/></svg>
+            <div data-page-node-id="2DkfdO80JhQt29mVOc8uKe">
+              <b data-i18n="q.failT" data-page-node-id="1mLYKvErVBObNGFYbAfSd6">题目生成失败，没有拿到结果</b>
+              <span data-i18n="q.failD" data-page-node-id="MoSUaNakZg5uizUYkELEBq">可能是网络中断或服务超时。你的岗位与背景已经保存，直接重试不会丢失已填内容。</span>
+            </div>
+          </div>
+          <div class="cta-row" data-page-node-id="pax0MfdWiNYWl6cVAHFmo3">
+            <button class="btn primary" id="btnRetryQ" data-i18n="q.retry" data-page-node-id="BZMxiCvK59VOQDNeJln1lM">重试生成</button>
+            <button class="btn ghost" data-go="diagnose" data-i18n="q.backBg" data-page-node-id="HZaIrG8f2ghAEW36B4N5Yu">返回修改背景</button>
+          </div>
+        </div>
+
+        <div id="qBody" hidden data-page-node-id="bCo62vzsY6mNOxCy20sFwh">
+          <div class="qcard" data-page-node-id="nRmZHcEHNty1IJ9tipivbT">
+            <div class="qhead" data-page-node-id="GdgBJMmdzkSLuO5d5kkqf3">
+              <span class="tag" id="qTagRole" data-page-node-id="LOtlvORn72Kj5aIZqqEbrF">产品经理（B 端）</span>
+              <span class="tag" id="qTagType" data-i18n="q.tagType" data-page-node-id="GGLSYHMJHtykT8TrH1x8dQ">行为题</span>
+              <span class="tag" id="qTagFocus" data-page-node-id="Q5DeY2IKN8G42YCAYqe8CT">重点校验 · 结构</span>
+              <span style="margin-left:auto;color:var(--faint)" id="qTagNo" data-page-node-id="hbjOUN7b0mMtTVEG7sfV4m">题库编号 PM-014</span>
+            </div>
+            <div class="qbody" data-page-node-id="VdUptYlCqBTJ7r8r81JrcG">
+              <p class="qtext" id="qText" data-page-node-id="GHEVDyDZwK6DmaLDOlcuaH"></p>
+              <div class="followups" data-page-node-id="t0TzBNSumbX0PVUXScuMfq">
+                <h4 data-i18n="q.followH" data-page-node-id="c4QJYRhBGsRteuQCD8jfef">面试官通常会追问</h4>
+                <ol id="qFollow" data-page-node-id="37cxjmn5JABVHQmXjwqlfh"></ol>
+              </div>
+              <div class="timer" data-page-node-id="UujGFlPN5FjGmyXdsytqOE">
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" data-page-node-id="kQq47CnnFVyjBXPo5mN8iK"><circle cx="8" cy="8.6" r="5.6" fill="none" stroke="currentColor" stroke-width="1.5" data-page-node-id="5jZACMiHO3OyCYrJxJvarK"/><path d="M8 5.6v3.2l2 1.2M6 1.6h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" data-page-node-id="Ao8e32KSoVRQcVxXial5BT"/></svg>
+                <span data-i18n="q.prepareT" data-page-node-id="SoU4eOmVpvRgxOPL25qeHi">建议准备 30 秒、作答 3 分钟 · 已思考</span> <b id="qTimer" data-page-node-id="lTHJpHLnKOHSHEmkjBzCGD">0:00</b>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:18px" id="qWhy" data-page-node-id="UMCWdAC6VWw0IBTF0DVp9G"></div>
+
+          <div class="cta-row" data-page-node-id="xreud9Ca7CpFFBZaQfTJPH">
+            <button class="btn primary lg" data-go="answer" data-page-node-id="UiwDdADeIxfirICFEBRKnq">
+              <span data-i18n="q.start" data-page-node-id="aX6Hn38ZFqECCQzR6FW85g">开始作答</span>
+              <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" data-page-node-id="M5B08ZlA8vUrlDgEathuKS"><path d="M2.5 8h10M9 4.6L12.4 8 9 11.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="EA6WWmjz5X4zzj3LxZMW8t"/></svg>
+            </button>
+            <button class="btn ghost" id="btnSwapQ" data-i18n="q.swap" data-page-node-id="HMElIlytPqcgFfgTHdLF1O">换一道同类型的题</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 3 · 作答 ============ -->
+      <section class="screen" id="s-answer" data-screen="answer" data-page-node-id="1Icx2yQ25sDBB4LRwxcZlv">
+        <p class="eyebrow" data-i18n="ans.eyebrow" data-page-node-id="uCVI4JDfUdffxJbXsnbecJ">Step 3 / 6 · 作答</p>
+        <h2 tabindex="-1" data-i18n="ans.h2" data-page-node-id="gERW4NkucsrOphIo3jh7rl">像在面试里那样，把答案说完整</h2>
+        <p class="lede tight" data-i18n="ans.lede" data-page-node-id="1COEEkqGV9I9dWZGNcr2Kx">不必打字打得漂亮，重点是顺序与依据。提交后它会按同一条标准逐维度打分。</p>
+
+        <div class="answer-wrap" data-page-node-id="keF0YU2zJRTdqHL23hF6pz">
+          <div class="qcard" data-page-node-id="XZqAaoVDR7Ny6Y9Ad9RwkZ">
+            <div class="qhead" data-page-node-id="M4zyjXRc7yO00MVh8A8PWt">
+              <span class="tag" id="aTagRole" data-page-node-id="AfxpfQ2KlBbqRJ6WLJJBXV">产品经理（B 端）</span>
+              <span class="tag" id="aTagFocus" data-page-node-id="uR3RIOfAUHvTDNB0sRiLex">本次重点 · 结构</span>
+            </div>
+            <div class="qbody" data-page-node-id="YvL9TXUlO97gtBtsgrRWnA">
+              <p class="qtext" id="aQText" style="font-size:16.5px" data-page-node-id="gSAb5IwZdMqeZAhB14KCH2"></p>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:18px" data-page-node-id="m3wzfKyhKUXOsQrh6nyHo8">
+            <h3 data-page-node-id="xerxLyB7WgnlZyaAlMJ1iM"><span data-i18n="ans.h3" data-page-node-id="mwYU4Ys0qYOom56XWLVdVD">你的作答</span> <span class="en" data-i18n="ans.h3En" data-page-node-id="L2y2FKIQZb5deHkyh3Ninf">Your answer</span></h3>
+            <textarea id="answerInput" rows="9" data-i18n-ph="ans.ph"></textarea>
+            <div class="counter" data-page-node-id="DKjnw5K3d803q9QKB4eRWY">
+              <span id="ansCount" data-i18n="ans.cnt" data-page-node-id="6YR64Se18IA7NYEb0eCVhp">0 字 · 建议 200–400 字</span>
+              <span id="ansTime" data-i18n="ans.time" data-page-node-id="7TQZA6kKTKy61fRDpLYuQx">用时 0:00</span>
+            </div>
+            <div class="mic-row" data-page-node-id="jS7ZryXmkqhlXofORqHEKf">
+              <button class="mic" id="btnMic" aria-pressed="false" data-page-node-id="GUeXFKqAjtotAZz4TPZWQD">
+                <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true" data-page-node-id="Kof6AJ27JSf06hPn8ySUjB"><rect x="6" y="2" width="4" height="7" rx="2" fill="none" stroke="currentColor" stroke-width="1.6" data-page-node-id="gtibQIZVa7ZmxL98wZJSvV"/><path d="M4 8.4a4 4 0 008 0M8 12.4V14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" data-page-node-id="zcChs9hxutCdi4NEWxWSFK"/></svg>
+                <span id="micLabel" data-i18n="ans.mic" data-page-node-id="NYYOB2g1iMsTskRG1MfrnH">语音作答（演示）</span>
+                <span class="wave" aria-hidden="true" data-page-node-id="TRxwu2rhtv3Tw7kJMOmXui"><i data-page-node-id="wgd6ZGK677Rzt9BBPMQQ42"></i><i data-page-node-id="D9XgB7DkRjgkuVPfvDsCEH"></i><i data-page-node-id="kPS0iEmNuX630HqCeAFywt"></i><i data-page-node-id="ndFy3plihQyPOC0F4KwZcU"></i><i data-page-node-id="5ZZMlbzeyxAj0qbFoWezO6"></i></span>
+              </button>
+              <button class="btn quiet" id="btnSample" data-i18n="ans.sample" data-page-node-id="xzH1SzHiII0QD04NhImgzt">填入示例作答</button>
+              <button class="btn quiet" id="btnClear" data-i18n="ans.clear" data-page-node-id="0IYfAyvv3Bet9POA5UXzUh">清空</button>
+            </div>
+          </div>
+
+          <div class="err" id="ansErr" hidden data-page-node-id="DiSYxe0dVUBbv3QEYv4FC9">
+            <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" data-page-node-id="HOMeIJBzfn9gC7i9lFO4LD"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.5" data-page-node-id="lnBoGvbE3aZpIvXCo1EX2B"/><path d="M8 4.6v4.2M8 11.2v.1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" data-page-node-id="B3ylP5PYlanAdbsU6e8W8i"/></svg>
+            <div data-page-node-id="XHGGBlQlHPrw34z8S0MNIS"><b id="ansErrT" data-page-node-id="3dKC8GHYtk8y4L2rh8cC7f">还不能评分</b><span id="ansErrD" data-page-node-id="BSdAVKCiw6DVGGrRn5HLWi"></span></div>
+          </div>
+
+          <div class="ctx-mini" id="ctxMini" data-page-node-id="FoXfl0F9F00KJWYV4EVAW1"></div>
+
+          <div class="cta-row" data-page-node-id="eCn7YLbwg9r06gwGdj6AF8">
+            <button class="btn primary lg" id="btnScore" data-i18n="ans.submit" data-page-node-id="VzVrVbAYnGKWmMDuX8VDwC">提交并评分</button>
+            <button class="btn ghost" data-go="question" data-i18n="ans.back" data-page-node-id="3C50F5dKCtmyXYpnbN96GI">回到题目</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 4 · 评分 ============ -->
+      <section class="screen" id="s-score" data-screen="score" data-page-node-id="wAcUN7TWN7FGuBeIs1Ih79">
+        <p class="eyebrow" data-i18n="score.eyebrow" data-page-node-id="CDjosv9Q9p9qBsD22oN9tI">Step 4 / 6 · 评分</p>
+        <h2 tabindex="-1" id="scoreH2" data-page-node-id="9dMb6zYSCv6w32REwLelbg">同一条标准，第二次读数</h2>
+        <p class="lede tight" id="scoreLede" data-page-node-id="FxrNPlqDn2Q6FiwdBJ5srh"></p>
+
+        <div class="score-hero" data-page-node-id="QGnaWcEwloSdsOE2k1Vnlf">
+          <div class="gauge" data-page-node-id="TwmaMNmqaaDWqhzOaSmxNJ">
+            <svg width="184" height="184" viewBox="0 0 184 184" aria-hidden="true" data-page-node-id="F0LIwLxrFHgpAwnn3OmenX">
+              <circle cx="92" cy="92" r="78" fill="none" stroke="#eef2f7" stroke-width="14" data-page-node-id="KgBlueJLuzOQppgJ5pylh3"/>
+              <circle id="gaugeArc" cx="92" cy="92" r="78" fill="none" stroke="url(#gg)" stroke-width="14" stroke-linecap="round" stroke-dasharray="490" stroke-dashoffset="490" data-page-node-id="vsmgx5cS2hJz864lCvZGHQ"/>
+              <defs data-page-node-id="A1AOfAnFGHxdohFTrCUiEY"><linearGradient id="gg" x1="0" y1="0" x2="1" y2="1" data-page-node-id="bZLT62MaZC1SqUp63HpPDK"><stop offset="0" stop-color="#4a86c8" data-page-node-id="28BiLuUryPuZQeXaE5aAIK"/><stop offset="1" stop-color="#2c5f8d" data-page-node-id="hbokUB7p2fb5j0KAaXOuL6"/></linearGradient></defs>
+            </svg>
+            <div class="val" data-page-node-id="Iz4SLqKggEw39iFYP9tNlb"><b id="scoreNum" data-page-node-id="aJNDDUMhGrlGYZBOVg0gW1">0</b><span data-i18n="score.total" data-page-node-id="lsBso52zKLAyaschf8kwLw">总分 / 100</span></div>
+          </div>
+          <div class="score-meta" data-page-node-id="KeFKOFSi6LPxFXGkCtFovY">
+            <span class="lvl" id="scoreLvl" data-page-node-id="nGE0sxqOejn3dJDGbXrvkF">—</span>
+            <h3 id="scoreHead" data-page-node-id="AEY7LlLXO1bVfrOSvZcIcw"></h3>
+            <p id="scoreSub" data-page-node-id="9FgbFsptb7GABewY9fYc3q"></p>
+            <div class="delta-chips" id="scoreDelta" data-page-node-id="W5Qpe9k0mk8F202HA8ZjkC"></div>
+          </div>
+        </div>
+
+        <div class="dims" id="dimList" data-page-node-id="3sJ31yPudbqskJJVGU6QCy"></div>
+
+        <div class="rule-row" data-page-node-id="mO73d4ImJGWXum92kQEmow">
+          <div data-page-node-id="2uDQEf0TfLUxJLyPISaPWp"><span data-i18n="rule.role" data-page-node-id="QA4xjKlZq11ceYiDg8DzNv">岗位</span><b id="ruleRole" data-page-node-id="MgUG958nQpAi9pvSaRCTn8">—</b></div>
+          <div data-page-node-id="gbspat6pSpKd66DFLpOqPF"><span data-i18n="rule.rubric" data-page-node-id="UvPt46JhxjSHWtfmspJw6w">量表</span><b data-i18n="rule.rubricVal" data-page-node-id="iBRps3Uoo2yC3HDZuL7ZF7">4 维 × 25 分</b></div>
+          <div data-page-node-id="C5IUHwZeIUr2w2wAoHYvH3"><span data-i18n="rule.type" data-page-node-id="eGWINStTBUnuLH4G3MeYx6">题目类别</span><b id="ruleType" data-i18n="q.tagType" data-page-node-id="gRfaciAReN0yHy4k8EffvJ">行为题</b></div>
+        </div>
+
+        <div class="fixes" id="fixList" data-page-node-id="zZLH7iRtu4c3T1FPOc3dhe"></div>
+
+        <div class="note-soft" data-page-node-id="IYg7OtLY1IBZqIV3GCv6oR">
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" data-page-node-id="SGjypqpXzRnihC6H9vrtSY"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5" data-page-node-id="A2gpjRBUgaU6kfOBANz7j7"/><path d="M8 7.2v3.6M8 5.1v.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" data-page-node-id="3yYCFYZOJaeE1205lFQfxN"/></svg>
+          <div data-page-node-id="4gJPcDfFbl02nhnNhVXPNW"><b data-i18n="score.noteT" data-page-node-id="9BBtbHWj5c1Wo5OfItweuf">关于这个分数：</b><span data-i18n="score.noteD" data-page-node-id="0Vjw7DDkqGqNtL6lqB0vUy">它是本地规则按固定量表算出的演示结果，用于验证「打分 → 对比」这条交互是否成立，不代表真实能力评估。接入模型后，量表与维度保持不变 —— 变的只是判分者。</span></div>
+        </div>
+
+        <div class="cta-row" data-page-node-id="pAMlI29mlnK7lBhDqIdFhG">
+          <button class="btn primary lg" data-go="progress" data-page-node-id="RyNbG16V1oF9QZ2dA1EViM">
+            <span data-i18n="score.cta" data-page-node-id="kJERa1xCEmhuxlZ3SG06Sd">看进步曲线</span>
+            <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" data-page-node-id="h1LaEM1TTGyqxeZsh3bsOC"><path d="M2.5 8h10M9 4.6L12.4 8 9 11.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="gwIZsUwUXAKYib2uo1Dsai"/></svg>
+          </button>
+          <button class="btn ghost" data-go="answer" data-i18n="score.back" data-page-node-id="zMFxmEoSXRNrzklUTGFEuJ">回到作答</button>
+        </div>
+      </section>
+
+      <!-- ============ 5 · 进步曲线 ============ -->
+      <section class="screen" id="s-progress" data-screen="progress" data-page-node-id="6m8KyARADbxCtiozEstUEQ">
+        <p class="eyebrow" data-i18n="prog.eyebrow" data-page-node-id="fYuQd6kWZaokZ4Lpi6Xj89">Step 5 / 6 · 进步信号</p>
+        <h2 tabindex="-1" data-i18n="prog.h2" data-page-node-id="G7GwcLELtmSNrXOuPhIVln">这一周，有没有白练</h2>
+        <p class="lede tight" id="progLede" data-page-node-id="RphtshmfJ6rMASCfDB4LfU"></p>
+
+        <div id="progEmpty" data-page-node-id="K35xATcEXbtAlHICu6uXer"></div>
+        <div id="progBody" hidden data-page-node-id="gnsCKmTRQc5neyg18hsfzX">
+          <div class="sig" id="sigCards" data-page-node-id="2cGvl9EwM5uHmUBAFHCh5z"></div>
+          <div class="chart-wrap" data-page-node-id="yABpBlQZb10qOQetMPH5Dc">
+            <div id="chartHolder" data-page-node-id="B7L9N7DvCQQgR8jVJCbKLO"></div>
+            <p class="hint" style="padding:0 6px 12px" data-i18n="prog.chartHint" data-page-node-id="RCgLQAn67BjqCKHVCNN7JT">虚线为达标线。只有在岗位、量表、题目类别三者不变的前提下，这条折线才代表「同一件事的重复测量」。</p>
+          </div>
+          <h3 style="margin-top:30px" data-i18n="prog.dimH" data-page-node-id="d0SH1NAHu0NGG2LummgkG8">维度明细与变化</h3>
+          <div class="dbars" id="dBars" data-page-node-id="WKRBSD9PHEBVZgvsIHZd5G"></div>
+          <div class="note-soft" id="cmpNote" data-page-node-id="34Nus1HHAE0rRAPYFCfSL8"></div>
+          <div class="cta-row" data-page-node-id="OyVFCJzQyfEdJIR4PY3Qop">
+            <button class="btn primary lg" data-go="stepback" data-page-node-id="xfJRLjmokBtL0vp61Bs14w">
+              <span data-i18n="prog.cta.stepback" data-page-node-id="ArgQR33GBl0oI5Xtx00q1k">查看退场机制</span>
+              <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true" data-page-node-id="5DwUZDrwAzC3slYm2auCTv"><path d="M2.5 8h10M9 4.6L12.4 8 9 11.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="ajuWkBbMMKASPrAOUtwFGN"/></svg>
+            </button>
+            <button class="btn ghost" id="btnNextRep" data-i18n="prog.cta.nextrep" data-page-node-id="DUhOCZbmVRrOTOaKVZCRJV">再来一 rep（同一岗位）</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 6 · 退场 ============ -->
+      <section class="screen" id="s-stepback" data-screen="stepback" data-page-node-id="Om93KcKPbcrnihrw5jrQcU">
+        <p class="eyebrow" data-i18n="sb.eyebrow" data-page-node-id="86PCQmCddzZH42oCIRtHIC">Step 6 / 6 · 退场机制</p>
+        <h2 tabindex="-1" data-i18n="sb.h2" data-page-node-id="yAEzylCEVx96bgTLXEswVp">它应该比你先想到「可以不用它了」</h2>
+        <p class="lede tight" data-i18n="sb.lede" data-page-node-id="WvpqjWrmesIs8iyesJfb5k">一个练习工具最大的问题，是把用户留在里面。这里把退出条件写在明面上，并且可被检验。</p>
+
+        <div class="gate" data-page-node-id="3cNeXItWzAN98AV07DJjVU">
+          <div class="ring" data-page-node-id="cdcYU7oT2U7IeLjRWUkG2C">
+            <svg width="150" height="150" viewBox="0 0 150 150" aria-hidden="true" data-page-node-id="iPZwiKhFGyUFnQoAzPyIxF">
+              <circle cx="75" cy="75" r="62" fill="none" stroke="#eef2f7" stroke-width="12" data-page-node-id="yyEd6ZwWX2p0YhEv9UH5l0"/>
+              <circle id="gateArc" cx="75" cy="75" r="62" fill="none" stroke="#127a67" stroke-width="12" stroke-linecap="round" stroke-dasharray="389" stroke-dashoffset="389" transform="rotate(-90 75 75)" data-page-node-id="HKcXShZN62Gza7JcMbjXGc"/>
+            </svg>
+            <div class="val" data-page-node-id="3B4RstxoUMAsBeX8NleAcU"><b id="gateNum" data-page-node-id="VUJAICfAwvY2wlGTrEuuO8">0/2</b><span data-i18n="sb.consecutive" data-page-node-id="eTz8EVf3khJvoFtYC2usCX">连续达标</span></div>
+          </div>
+          <div data-page-node-id="793iDfvDlyh93Yeb3xzyt8">
+            <h3 id="gateHead" data-page-node-id="3a6q9ig8J7stO9ubHxTMfZ"></h3>
+            <p id="gateSub" style="font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.7" data-page-node-id="M1tgPCw9XGFHW4AVsFPiH7"></p>
+          </div>
+        </div>
+
+        <div class="rules" id="ruleList" data-page-node-id="fZQPBL1fXoHt50ugnfXK8p"></div>
+
+        <div class="switch-row" data-page-node-id="ZSC9gpb0BVF7gaWPdjdVLe">
+          <div class="txt" data-page-node-id="zRmhO9U6x3BhH1OskgkdAX">
+            <b data-i18n="sb.switchT" data-page-node-id="gXtvbPwDyASs6XLvyPSj9p">达标后自动降频：每周一提醒一次</b>
+            <p data-i18n="sb.switchD" data-page-node-id="hncshmLR34sUCQD5g38Dfc">从「想练就练」改为「每周一次固定复习」，减少无关打扰。</p>
+          </div>
+          <button class="switch" id="swRemind" role="switch" aria-checked="false" data-i18n-aria="sb.remindAria" data-page-node-id="2w9UVRt7ig6XJbC0vSEBmh"></button>
+        </div>
+
+        <div class="cta-row" data-page-node-id="ydscfwB2uzdlaoEAYx1EHa">
+          <button class="btn primary lg" id="btnEndCycle" data-i18n="sb.cta.end" data-page-node-id="lYntH8dXQEuI8DNhD8qPQF">结束本周期，导出小结</button>
+          <button class="btn ghost" data-go="progress" data-i18n="sb.cta.back" data-page-node-id="wn3FJU4gcz6UuKZ6YzQKuT">回到进步曲线</button>
+        </div>
+
+        <div class="result" id="cycleResult" hidden data-page-node-id="zo3R31iVYBcZrfYwo9V88w"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <footer class="foot" data-page-node-id="pmwd1bkyyw0xEekqKIcuDs">
+    <span data-i18n="foot.l" data-page-node-id="L41ERnWwrEPrSUxTbbM46J">vivi（林子微）· HW03 课程作业</span>
+    <span data-i18n="foot.r" data-page-node-id="hneFqdiWlsPJXeBo9ba7z7">REPS 砺答 · 可点击原型</span>
+  </footer>
+</div>
+
+<div class="scrim" id="scrim" data-page-node-id="F5LxHTpdy3h1ehjGE3vRFD"></div>
+
+<aside class="drawer" id="drawer" aria-hidden="true" aria-label="设计说明" data-page-node-id="sz1rsOdNEUbRm1oHctnMzI">
+  <div class="dhead" data-page-node-id="6pR8ynRYLSHsCEOIgcFrk6">
+    <h3 style="flex:1" data-i18n="dr.title" data-page-node-id="7IwfHsNqPe0vFEjuu37iE2">设计说明 · 从报告到原型</h3>
+    <button class="btn ghost sm" id="btnDrawerClose" data-i18n="dr.close" data-page-node-id="fwSTICic9gKUgRULjnsbc8">关闭</button>
+  </div>
+  <div class="dbody" data-page-node-id="cn303EPRRtRiygefVJDAKA">
+    <h4 data-i18n="dr.h1" data-page-node-id="iUnZtvplNy4cmdJHDcj4BL">一、每个环节对应报告（二）的哪一条结论</h4>
+    <table class="dtable" data-page-node-id="1HjTzGCCTX8d3DKkPOXmWA">
+      <thead data-page-node-id="7oZEtzjfGLkP7jtIuEH2Ys"><tr data-page-node-id="XuoKm3XOLc4Deb5HDwqC3K"><th style="width:100px" data-i18n="dr.col1" data-page-node-id="mGz8GNbQHHg5WhH2Tyznnh">原型环节</th><th data-i18n="dr.col2" data-page-node-id="uoJqVtBf1ifonE38sk52g3">依据</th></tr></thead>
+      <tbody data-page-node-id="JyJtiviWCcHv6OLCun3phs">
+        <tr data-page-node-id="RhnNOw66iUta15TKHxB4be"><td class="t" data-i18n="dr.r1a" data-page-node-id="b8I57bWhWLciC98u34wXUz">诊断卡点</td><td data-i18n="dr.r1b" data-page-node-id="knpMDivF7tYdlNRgxLzBZx">图 7 闭环第一环「诊断卡点（沿用 AINA 的顺序）」——先诊断再出题，而不是让用户自己挑练习内容</td></tr>
+        <tr data-page-node-id="YqMLrRd5m9xu9mKN5qbn8b"><td class="t" data-i18n="dr.r2a" data-page-node-id="OG31mwODGAhsAXtm5GuSOK">按岗位出题</td><td data-i18n="dr.r2b" data-page-node-id="9bXtfapxqnBFnzIdnI4BXP">表 4 场景：面试前 1–2 周，自主练习行为题与案例题；题目按岗位与背景生成</td></tr>
+        <tr data-page-node-id="HFCnixK1C4qnI1UnIoH3ND"><td class="t" data-i18n="dr.r3a" data-page-node-id="YMmZWjUcoDXAH1muwGZE1o">同一标准评分</td><td data-i18n="dr.r3b" data-page-node-id="NhDXJAjGmuPmDkaopQVAgj">表 6 竞争壁垒：一致的评分标准 + 个人进步曲线，而非通用 AI 能力</td></tr>
+        <tr data-page-node-id="wsBDVMrh9GHAFFw3lX6EC8"><td class="t" data-i18n="dr.r4a" data-page-node-id="qwYZ9VwtK8zEHfDmkSWK08">进步曲线</td><td data-i18n="dr.r4b" data-page-node-id="JITMnfOIXdNXRkAFOIHXJk">图 7 闭环「记入进步曲线 → 纵向可比较」；表 5 成功标准：周与周之间可看出变强</td></tr>
+        <tr data-page-node-id="qkQYD9ADGKv81Rr7XkeIbK"><td class="t" data-i18n="dr.r5a" data-page-node-id="aM2i7wllyhYn1hK0I0xWQx">退场机制</td><td data-i18n="dr.r5b" data-page-node-id="jt2hNj5APKE7JRXY25HhTf">结论：当用户不再需要它时，工具应主动退到一边</td></tr>
+      </tbody>
+    </table>
+
+    <h4 data-i18n="dr.h2" data-page-node-id="KAblVRGgCfl6DA2z3jPMBy">二、为什么坚持「三个不变」</h4>
+    <p style="font-size:13.5px;color:var(--muted);margin-top:10px;line-height:1.75" data-i18n="dr.p2" data-page-node-id="x14WadbMepKcHpNqHmfhaF">进步信号要成立，前提是重复测量的是同一件事。所以页面在评分与图表两处都显式标注了岗位、量表、题目类别 —— 一旦这三者变了，分数就不再可比，产品会如实说明而不是硬画一条向上的线。</p>
+
+    <h4 data-i18n="dr.h3" data-page-node-id="GF4C6Mim2PgUI3konC5LBG">三、MVP 边界（本原型刻意不做的事）</h4>
+    <ul class="dlist" data-page-node-id="plnBA1AUbZ7SbDKmguiE70">
+      <li data-i18n="dr.b1" data-page-node-id="nFLvOOnBDEeYumIvFvfw8Y">不做完整平台、社交与排行榜 —— 排行记录的是活跃度，不是能力</li>
+      <li data-i18n="dr.b2" data-page-node-id="eykBJwIzRRjxcr1uhLurfW">不做自建大题库与多岗位全覆盖，只覆盖 4 个岗位的同类型题</li>
+      <li data-i18n="dr.b3" data-page-node-id="BObZuDDDqF8mq4c78jVoGD">不接入真实模型：评分先用本地规则跑通闭环（下一阶段替换为模型打分）</li>
+      <li data-i18n="dr.b4" data-page-node-id="96H8SA0BW37YmER6uoVJBB">不做账号体系与云端同步，数据仅存浏览器本地</li>
+    </ul>
+
+    <h4 data-i18n="dr.h4" data-page-node-id="nqM5X9iW6ojM0Yrh8SL9HK">四、交互状态覆盖清单</h4>
+    <ul class="dlist" data-page-node-id="a0lYqZu54dBqwVhW9RSS8z">
+      <li data-page-node-id="EYmkq0g0wQkf9nTCROHyyo"><span class="ok" data-i18n="dr.s1t" data-page-node-id="kjxvx3E2BycEJJWnYgaQG2">加载态</span>：<span data-i18n="dr.s1d" data-page-node-id="UPqO4yWxsYl78eVMsSyWu2">出题按阶段给出进度文案，而非单一转圈</span></li>
+      <li data-page-node-id="wCdZfTXlZuK4vdCXzWhF4A"><span class="ok" data-i18n="dr.s2t" data-page-node-id="EYUyG85ovDNliNl1ImHP6k">失败态</span>：<span data-i18n="dr.s2d" data-page-node-id="MxjyHw7oMj6nDwfADzpzII">生成失败可原地重试，已填内容不丢失（见下方开关）</span></li>
+      <li data-page-node-id="VVLzbGCtUw8SnZlKr8ceiY"><span class="ok" data-i18n="dr.s3t" data-page-node-id="fnavOsDM8Nwlz8tQYtO02v">空状态</span>：<span data-i18n="dr.s3d" data-page-node-id="VxM6ZdzB5AZYJMzjUhd4dx">不足两次练习时，曲线不画假线，改为说明与引导</span></li>
+      <li data-page-node-id="dx9DKyG4D3Nh94ZtvGHFwY"><span class="ok" data-i18n="dr.s4t" data-page-node-id="K87VVz6LH9G6K4HoDjoAb4">边界态</span>：<span data-i18n="dr.s4d" data-page-node-id="PEuR06TEMzLsiLPL8qUq2j">空提交、超长作答、字数与用时提示</span></li>
+      <li data-page-node-id="12xhdh3pfaYMfnl64iMqCP"><span class="ok" data-i18n="dr.s5t" data-page-node-id="rOuFMBLYMhjnNL6jL7GlIf">无障碍</span>：<span data-i18n="dr.s5d" data-page-node-id="RrM0BfC7CH6lbSgf2sKDGh">键盘可达、评分结果 aria-live 播报、支持 reduced-motion</span></li>
+      <li data-page-node-id="TJjkZsXfGJi3yayDYCSZ5r"><span class="ok" data-i18n="dr.s6t" data-page-node-id="thtHj0CHS9u5IsXo9WHxMZ">可逆性</span>：<span data-i18n="dr.s6d" data-page-node-id="7gFcsWMDDJURhQGzMmBhSB">清空作答、换题、重来、回到任意已完成步骤</span></li>
+    </ul>
+
+    <h4 data-i18n="dr.h5" data-page-node-id="u6ooVm9yQVmyPRMFzsNZis">五、演示开关</h4>
+    <div class="toggles" data-page-node-id="xAsIjRSfY17zf0FKKWTr7k">
+      <div class="toggle-row" data-page-node-id="xudpKj701sKgwSXHo5D6cu">
+        <span class="dotind" id="dotFail" data-page-node-id="ip0ETAXLg9thYUgN2g19U1"></span>
+        <div class="txt" data-page-node-id="6EHTFpls8lpBkEUf7IeIrY"><b data-i18n="dr.t1t" data-page-node-id="PGMGOKZM9nVBBKG7BroERj">模拟出题失败</b><span data-i18n="dr.t1d" data-page-node-id="UDSrgQHvsper46eEwj2D6X">下次生成题目时触发失败态，用于课堂演示重试路径</span></div>
+        <button class="switch" id="swFail" role="switch" aria-checked="false" data-i18n-aria="dr.t1a" data-page-node-id="0N9qSz89PNM99hyAtPlXoT"></button>
+      </div>
+      <div class="toggle-row" data-page-node-id="1GA8tRDv1Jeo18dBS8t2NN">
+        <span class="dotind" id="dotDemo" data-page-node-id="B5LmYL4FY5XiVIMyDa7dJy"></span>
+        <div class="txt" data-page-node-id="sm67zJLG0lIL2aRUL5ENim"><b data-i18n="dr.t2t" data-page-node-id="1E8vusuvCXjsiK6FJh46cb">演示数据</b><span data-i18n="dr.t2d" data-page-node-id="YWobR8qeAYOSst1FirntlU">3 周历史与示例作答，用于在没有真实积累时展示进步曲线</span></div>
+        <button class="switch" id="swDemo" role="switch" aria-checked="false" data-i18n-aria="dr.t2a" data-page-node-id="YB36uAJskmoXRcwhoYeM0k"></button>
+      </div>
+      <div class="toggle-row" data-page-node-id="AxdzOGQ8C4QI2iye0ZDHNk">
+        <span class="dotind" id="dotSaved" data-page-node-id="rLXB9ErE50sdreqYT5wgpc"></span>
+        <div class="txt" data-page-node-id="nnKWg7g0nBcLsPcmTheyEy"><b data-i18n="dr.t3t" data-page-node-id="j1q2k6fusmzb4KNLF3Cblw">本地进度</b><span id="savedInfo" data-page-node-id="A2qMmLRgx6AZt9sGA6YV7e">暂无保存的进度</span></div>
+        <button class="btn ghost sm" id="btnWipe" data-i18n="dr.t3b" data-page-node-id="ZC8llLLiAuXgz1MfYx1dda">清空数据</button>
+      </div>
+    </div>
+
+    <h4 data-i18n="dr.h6" data-page-node-id="YYLTMXjzVpG6d97H7GZTcZ">六、声明</h4>
+    <p style="font-size:12.5px;color:var(--faint);margin-top:10px;line-height:1.75" data-i18n="dr.p6" data-page-node-id="HvEVhrq8bq4u1ucgjIfzOm">本原型为产品设计参考，题目、评分规则与历史数据均为演示内容，不构成任何能力评价；具体实施请结合公司合规与法务要求确认。</p>
+  </div>
+</aside>
+
+<div class="toast" id="toast" role="status" aria-live="polite" data-page-node-id="H3pJQc3kKno4Ql6JSVQnu8"></div>
+
+<div class="scrim" id="authScrim" style="z-index:55"></div>
+<div class="modal" id="authModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="authTitle">
+  <div class="mhead">
+    <h3 id="authTitle" data-i18n="auth.title">登录 / 注册</h3>
+    <button class="btn ghost sm" id="authClose" data-i18n="auth.close">关闭</button>
+  </div>
+  <div class="mtabs" role="tablist" aria-label="登录或注册">
+    <button data-authtab="login" class="on" data-i18n="auth.login">登录</button>
+    <button data-authtab="register" data-i18n="auth.register">注册</button>
+  </div>
+  <div class="mbody">
+    <label for="authUser" data-i18n="auth.user">用户名</label>
+    <input id="authUser" autocomplete="username" data-i18n-ph="auth.userPh" placeholder="例如 vivi">
+    <label for="authPass" data-i18n="auth.pass">密码</label>
+    <input id="authPass" type="password" autocomplete="current-password" data-i18n-ph="auth.passPh" placeholder="至少 6 位">
+    <button class="btn primary lg" id="authSubmit" data-i18n="auth.submitLogin">登录</button>
+    <p class="mnote" data-i18n="auth.note">演示用：不会创建真实账号，仅在本机保存一个模拟登录状态，刷新后仍在。</p>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ===================== 语言层 ===================== */
+var I18N = {
+  zh: {
+    "brand.sub":"可比的练习",
+    "btn.home":"回到首页","btn.design":"设计说明",
+    "steps.noteB":"一条标准，跨周可比。","steps.note":"岗位、量表、题目类别三者不变，分数才有比较的意义 —— 这是这个原型唯一想验证的事。",
+    "home.eyebrow":"Stage 1 · 第一个可点击原型",
+    "home.title":"把每一次练习，<br>变成可比较的一 rep。",
+    "home.lede":"面向面试准备学生的练习工具。它不教你怎么答题，只做一件事：用<b>同一条标准</b>给你的每一次作答打分，让你在周与周之间看见自己真的变强了 —— 或者，至少知道自己还差在哪。",
+    "home.start":"开始今天的一 rep","home.demo":"载入演示数据（3 周历史）","home.resume":"继续查看上次结果","home.demoHas":"查看进步曲线（已有 {n} 次记录）",
+    "home.spLabel":"本周进步信号 · 演示趋势","home.spFoot1":"同一标准，跨周可比","home.spFoot2":"这不是评分软件，是一条可比的进步曲线。",
+    "home.cmpBeforeH":"没有它的时候","home.cmpBeforeD":"练了很久，却说不清自己到底有没有变强；每次都用不同标准，分数没法比。",
+    "home.cmpAfterH":"有了 REPS 之后","home.cmpAfterD":"同样的岗位、同样的量表，每次读数都能和上次相减 —— 进步看得见，短板也藏不住。",
+    "stat.dimT":"4 个维度","stat.dimS":"结构 · 论据 · 岗位相关度 · 表达，每项 25 分",
+    "stat.stdT":"1 条标准","stat.stdS":"同一量表反复使用，分数才可比",
+    "stat.weekT":"周维度","stat.weekS":"不比单次高低，只看是否在往上走",
+    "pc1.t":"先诊断，再出题","pc1.d":"不问你想练什么，先判断你最可能在哪儿丢分，题目按卡点生成 —— 借用 AINA「先诊断再建议」的顺序。",
+    "pc2.t":"同一标准，才可比较","pc2.d":"每次作答都按同一套量表打分，并记录在案。竞争壁垒不是通用 AI 能力，而是这条标准的稳定性。",
+    "pc3.t":"达标即退场","pc3.d":"连续达标后，工具主动减少打扰、建议你去面试。它的任务不是留住你，是证明这一周没有白练。",
+    "fineprint":"演示原型：题目、评分与历史数据均为演示内容，评分由本地规则计算。",
+    "diag.eyebrow":"Step 1 / 6 · 诊断卡点","diag.h2":"先找卡点，再出题",
+    "diag.lede":"三选一：告诉它你要面什么岗、你的背景、以及凭直觉最可能丢分的地方。诊断会决定今天这道题重点校验哪个维度。",
+    "diag.roleH":"目标岗位","diag.roleEn":"Role","diag.bgH":"背景要点","diag.bgEn":"Background",
+    "diag.bgPh":"例：3 年 B 端产品，做过 SaaS 报表与权限模块，无大厂经历","diag.bgHint":"一两句话即可，只用于让题目贴近你的真实经历","diag.fillBg":"填入示例背景",
+    "diag.gapH":"卡点自评","diag.gapEn":"Self-check","diag.gapHint":"四选一。选不准也没关系，先凭直觉 —— 评分之后我们再校准。",
+    "diag.gen":"生成诊断结果","diag.back":"返回首页",
+    "diag.errT":"还差一个卡点自评","diag.errD":"请在右侧选一个最接近你的情况 —— 它决定今天这道题重点校验哪个维度。",
+    "q.eyebrow":"Step 2 / 6 · 出题","q.h2":"按你的岗位与卡点生成题目","q.lede":"同一岗位用同一套题库，保证不同时间的练习可比。",
+    "q.loadMsg":"正在准备题库…","q.failT":"题目生成失败，没有拿到结果","q.failD":"可能是网络中断或服务超时。你的岗位与背景已经保存，直接重试不会丢失已填内容。",
+    "q.retry":"重试生成","q.backBg":"返回修改背景","q.tagType":"行为题","q.followH":"面试官通常会追问",
+    "q.start":"开始作答","q.swap":"换一道同类型的题","q.whyH":"为什么是这道题","q.whyEn":"Why this one",
+    "q.prepareT":"建议准备 30 秒、作答 3 分钟 · 已思考",
+    "ans.eyebrow":"Step 3 / 6 · 作答","ans.h2":"像在面试里那样，把答案说完整","ans.lede":"不必打字打得漂亮，重点是顺序与依据。提交后它会按同一条标准逐维度打分。",
+    "ans.h3":"你的作答","ans.h3En":"Your answer","ans.ph":"先给结论，再讲依据。可以按「结论 → 背景 → 我的判断 → 结果」的顺序展开。",
+    "ans.cnt":"0 字 · 建议 200–400 字","ans.time":"用时 0:00","ans.mic":"语音作答（演示）","ans.sample":"填入示例作答","ans.clear":"清空",
+    "ans.errT":"还不能评分","ans.errD":"作答太短，量表读不出有效信息。至少写 30 字；不知道从哪开始的话，可以先点「填入示例作答」看看结构。",
+    "ans.errLongT":"建议先压缩再提交","ans.errLongD":"当前 {n} 字，回答过长会在结构维度失分。删掉重复铺垫，把结论提到第一句。",
+    "ans.submit":"提交并评分","ans.back":"回到题目",
+    "score.eyebrow":"Step 4 / 6 · 评分","score.total":"总分 / 100",
+    "rule.role":"岗位","rule.rubric":"量表","rule.rubricVal":"4 维 × 25 分","rule.type":"题目类别",
+    "score.noteT":"关于这个分数：","score.noteD":"它是本地规则按固定量表算出的演示结果，用于验证「打分 → 对比」这条交互是否成立，不代表真实能力评估。接入模型后，量表与维度保持不变 —— 变的只是判分者。",
+    "score.cta":"看进步曲线","score.back":"回到作答",
+    "prog.eyebrow":"Step 5 / 6 · 进步信号","prog.h2":"这一周，有没有白练",
+    "prog.chartHint":"虚线为达标线。只有在岗位、量表、题目类别三者不变的前提下，这条折线才代表「同一件事的重复测量」。",
+    "prog.dimH":"维度明细与变化","prog.cta.stepback":"查看退场机制","prog.cta.nextrep":"再来一 rep（同一岗位）",
+    "sb.eyebrow":"Step 6 / 6 · 退场机制","sb.h2":"它应该比你先想到「可以不用它了」","sb.lede":"一个练习工具最大的问题，是把用户留在里面。这里把退出条件写在明面上，并且可被检验。",
+    "sb.consecutive":"连续达标","sb.switchT":"达标后自动降频：每周一提醒一次","sb.switchD":"从「想练就练」改为「每周一次固定复习」，减少无关打扰。",
+    "sb.cta.end":"结束本周期，导出小结","sb.cta.back":"回到进步曲线",
+    "foot.l":"vivi（林子微）· HW03 课程作业","foot.r":"REPS 砺答 · 可点击原型",
+    "auth.btn":"登录 / 注册","auth.title":"登录 / 注册","auth.login":"登录","auth.register":"注册","auth.close":"关闭",
+    "auth.user":"用户名","auth.userPh":"例如 vivi","auth.pass":"密码","auth.passPh":"至少 6 位",
+    "auth.submitLogin":"登录","auth.submitRegister":"注册",
+    "auth.note":"演示用：不会创建真实账号，仅在本机保存一个模拟登录状态，刷新后仍在。",
+    "auth.hi":"你好，{user}","auth.logoutTitle":"点击退出登录",
+    "auth.toastLogin":"已登录：{user}（演示）","auth.toastRegister":"已创建演示账号：{user}","auth.toastLogout":"已退出登录（演示）",
+    "auth.errUser":"请填写用户名","auth.errPass":"密码至少 6 位",
+    "dr.title":"设计说明 · 从报告到原型","dr.close":"关闭",
+    "dr.h1":"一、每个环节对应报告（二）的哪一条结论","dr.col1":"原型环节","dr.col2":"依据",
+    "dr.r1a":"诊断卡点","dr.r1b":"图 7 闭环第一环「诊断卡点（沿用 AINA 的顺序）」——先诊断再出题，而不是让用户自己挑练习内容",
+    "dr.r2a":"按岗位出题","dr.r2b":"表 4 场景：面试前 1–2 周，自主练习行为题与案例题；题目按岗位与背景生成",
+    "dr.r3a":"同一标准评分","dr.r3b":"表 6 竞争壁垒：一致的评分标准 + 个人进步曲线，而非通用 AI 能力",
+    "dr.r4a":"进步曲线","dr.r4b":"图 7 闭环「记入进步曲线 → 纵向可比较」；表 5 成功标准：周与周之间可看出变强",
+    "dr.r5a":"退场机制","dr.r5b":"结论：当用户不再需要它时，工具应主动退到一边",
+    "dr.h2":"二、为什么坚持「三个不变」","dr.p2":"进步信号要成立，前提是重复测量的是同一件事。所以页面在评分与图表两处都显式标注了岗位、量表、题目类别 —— 一旦这三者变了，分数就不再可比，产品会如实说明而不是硬画一条向上的线。",
+    "dr.h3":"三、MVP 边界（本原型刻意不做的事）",
+    "dr.b1":"不做完整平台、社交与排行榜 —— 排行记录的是活跃度，不是能力","dr.b2":"不做自建大题库与多岗位全覆盖，只覆盖 4 个岗位的同类型题",
+    "dr.b3":"不接入真实模型：评分先用本地规则跑通闭环（下一阶段替换为模型打分）","dr.b4":"不做真实账号体系与云端同步（右上角「登录 / 注册」仅为界面演示，不接入后端），数据仅存浏览器本地",
+    "dr.h4":"四、交互状态覆盖清单",
+    "dr.s1t":"加载态","dr.s1d":"出题按阶段给出进度文案，而非单一转圈","dr.s2t":"失败态","dr.s2d":"生成失败可原地重试，已填内容不丢失（见下方开关）",
+    "dr.s3t":"空状态","dr.s3d":"不足两次练习时，曲线不画假线，改为说明与引导","dr.s4t":"边界态","dr.s4d":"空提交、超长作答、字数与用时提示",
+    "dr.s5t":"无障碍","dr.s5d":"键盘可达、评分结果 aria-live 播报、支持 reduced-motion","dr.s6t":"可逆性","dr.s6d":"清空作答、换题、重来、回到任意已完成步骤",
+    "dr.h5":"五、演示开关","dr.t1t":"模拟出题失败","dr.t1d":"下次生成题目时触发失败态，用于课堂演示重试路径","dr.t1a":"模拟出题失败",
+    "dr.t2t":"演示数据","dr.t2d":"3 周历史与示例作答，用于在没有真实积累时展示进步曲线","dr.t2a":"载入演示数据",
+    "dr.t3t":"本地进度","dr.t3b":"清空数据","dr.h6":"六、声明","dr.p6":"本原型为产品设计参考，题目、评分规则与历史数据均为演示内容，不构成任何能力评价；具体实施请结合公司合规与法务要求确认。",
+    "sb.remindAria":"开启每周一提醒",
+    "ctx.idle":"尚未选择岗位","ctx.gap":"卡点 · ","ctx.practiced":"已练 {n} 次",
+    "diag.lead":"诊断结果 · DIAGNOSIS","diag.bigPrefix":"你最可能丢分的地方：","diag.descMid":"。按你的自评，今天这道题会重点校验","diag.descEnd":"这一维度 —— 也就是说，它同样会考其他三项，但评分反馈会先把这一项讲透。",
+    "diag.kvRole":"目标岗位","diag.kvFocus":"本次重点","diag.kvLib":"题库","diag.libVal":"{code}-014 行为题","diag.genToday":"生成今天的题目","diag.rediag":"改一下背景或卡点",
+    "score.h2Base":"先建立一条基线","score.h2Nth":"同一条标准，第 {n} 次读数",
+    "score.headUp":"比上一次高 {d} 分","score.headFlat":"与上一次持平","score.headDown":"比上一次低 {d} 分","score.headBase":"这是你的基线分",
+    "score.subPrev":"同岗位、同量表、同题目类别下的第二次读数。差别不在难度，在你这次的组织方式。",
+    "score.subBase":"第一次练习没有对比对象，它只作为基线。下一次的成绩会与它相减 —— 这才是进步信号。",
+    "score.ledePrev":"与 {label} 的那一次读同一个量表。分数高低不重要，重要的是这一次和上一次的差。",
+    "score.ledeBase":"第一次练习只产生基线。从下一次起，分数才有比较的意义。",
+    "score.chipBase":"基线 · 暂无对比","score.hit":"已达标","score.diff":"差 {d} 分",
+    "score.dimFirst":"首次记录","score.dimVs":" vs 上次","score.dimFlat":"与上次持平",
+    "score.fixH":"下一次只改两件事","score.fixHEn":"Next two reps","score.holdLead":"这一项是本次最稳的",
+    "score.holdTail":"（{v}/25），下一次不需要为它额外花时间。",
+    "prog.ledeEmpty":"进步信号需要至少两次同标准的练习才能成立。","prog.lede":"累计 {n} 次同标准练习，从 {first} 分到 {last} 分。",
+    "prog.emptyT":"还没有足够的历史","prog.emptyD":"目前只有 {n} 次记录。少于两次，画出来的折线不代表任何趋势 —— 这个原型不会用一条假线来制造「进步感」。",
+    "prog.demoBtn":"载入演示数据（3 周历史 + 本次成绩）","prog.repractice":"再练一 rep",
+    "prog.sigCur":"本次得分 · {label}","prog.sigCum":"相比首次的累计变化","prog.sigCumSub":"共 {n} 次记录，{ups} 次上升","prog.sigTargetUp":"已达标","prog.sigTargetDown":"差 {d}",
+    "prog.cmpTitle":"可比较的前提（本次已满足）：","prog.cmpBody":"岗位「{role}」、量表「4 维 × 25 分」、题目类别「行为题」三者与上一次一致。<br>分数上升主要来自<b>{up}</b>；同时要注意 <b>{down}</b> 的变化相对落后 —— 总分上涨时最容易掩盖单项退步。",
+    "sb.gateHit":"已达退场条件：建议降到每周 1 次","sb.gateNoHit":"尚未触发退场（连续达标 {n} / {need} 次）",
+    "sb.gateSubHit":"你已经连续 {n} 次达到 {t} 分。这个工具现在的价值低于你去真实面试的价值 —— 建议只保留每周一次复习提醒。",
+    "sb.gateSubNoHit":"还有 {need} 次达标就会触发降频。这条规则写在明面上：它被设计成会主动让你离开，而不是想方设法留住你。",
+    "sb.rule1":"触发条件：连续 {need} 次 ≥ {t} 分","sb.rule1d":"达标线固定在 {t} 分，不随分数上涨而上调 —— 否则用户永远到不了终点。",
+    "sb.rule2":"降频：从「想练就练」改为「每周一次」","sb.rule2d":"只保留一条周一复习提醒，其余推送关闭，不用提醒制造虚假的紧迫感。",
+    "sb.rule3":"可单方面结束周期，并带走小结","sb.rule3d":"结束时给出本周期分数变化、已稳住的维度与仍需补强的维度，不需要挽留话术。",
+    "cyc.emptyLead":"本周期小结 · SUMMARY","cyc.emptyBig":"还没有可汇总的记录","cyc.emptyD":"先完成至少一次练习，再来结束这个周期。",
+    "cyc.lead":"本周期小结 · CYCLE SUMMARY","cyc.big":"{first} → {last} 分，共 {n} 次练习",
+    "cyc.dTotal":"累计变化 <b>{d}</b> 分。","cyc.up":"已经稳住的是 <b>{x}</b>。","cyc.rest":"仍待补强的是 <b>{x}</b> —— 下一次回来时，只需要带这两个问题。",
+    "cyc.allup":"四个维度相比首次都在进步，这个周期没有留下明显的短板。","cyc.kvRole":"岗位","cyc.kvN":"练习次数","cyc.kvState":"当前状态","cyc.pass":"已达标","cyc.fail":"未达标",
+    "cyc.end":"小结到这里就结束了。这个工具不再给你更多建议 —— 去面试吧。","cyc.back":"回到进步曲线","cyc.restart":"开启新周期",
+    "q.stage1":"正在读取目标岗位与背景…","q.stage2":"正在匹配同类型题目（保障可比）…","q.stage3":"正在按你的卡点调整校验重点…","q.stage4":"正在生成题目与追问…",
+    "toast.bg":"已填入示例背景，可直接修改","toast.sample":"已填入示例作答（演示文本，可直接修改后提交）","toast.mic":"已转写为文字（演示：未接入真实语音识别）",
+    "toast.scored":"已按同一量表完成评分","toast.remindOn":"已开启每周一提醒","toast.remindOff":"已关闭提醒",
+    "toast.failOn":"已开启：下次生成题目将演示失败态","toast.failOff":"已关闭失败模拟","toast.demoOff":"已取消演示数据标记（历史记录保留）",
+    "toast.demo":"已载入演示数据：{n} 次记录（其中 {m} 次为虚构历史）","toast.newCycle":"已开启新周期：历史记录清空，量表与岗位保持不变","toast.wiped":"本地数据已清空，回到初始状态","toast.restored":"已恢复上次的本地进度（可清空数据重来）"
+  },
+  en: {
+    "brand.sub":"Comparable practice",
+    "btn.home":"Home","btn.design":"Design notes",
+    "steps.noteB":"One rubric, comparable across weeks.","steps.note":"Only when role, rubric and question type stay fixed do scores become comparable — that is the one thing this prototype wants to prove.","steps.aria":"Practice flow",
+    "home.eyebrow":"Stage 1 · First clickable prototype",
+    "home.title":"Turn every rep<br>into a comparable one.",
+    "home.lede":"A practice tool for interview-prep students. It won't teach you how to answer — it does one thing: score every answer with the <b>same rubric</b>, so you can see week over week whether you actually got stronger — or at least where you're still short.",
+    "home.start":"Start today's rep","home.demo":"Load demo data (3 weeks)","home.resume":"View last result","home.demoHas":"View progress curve ({n} records)",
+    "home.spLabel":"Weekly signal · demo trend","home.spFoot1":"Same rubric, comparable across weeks","home.spFoot2":"Not a scoring app — a comparable progress curve.",
+    "home.cmpBeforeH":"Without it","home.cmpBeforeD":"Practiced for ages yet can't say if you improved; every session uses a different standard, so scores can't be compared.",
+    "home.cmpAfterH":"With REPS","home.cmpAfterD":"Same role, same rubric — every reading subtracts from the last. Progress is visible, and so are the weak spots.",
+    "stat.dimT":"4 dimensions","stat.dimS":"Structure · Evidence · Relevance · Clarity, 25 pts each",
+    "stat.stdT":"1 rubric","stat.stdS":"Reuse the same rubric so scores stay comparable",
+    "stat.weekT":"Weekly view","stat.weekS":"Don't compare single scores — only whether it trends up",
+    "pc1.t":"Diagnose, then generate","pc1.d":"It doesn't ask what you want to practice; it finds where you'll likely lose points and builds the question around that gap — borrowing AINA's diagnose-then-advise order.",
+    "pc2.t":"Same rubric, comparable","pc2.d":"Every answer is scored on the same rubric and logged. The moat isn't general AI ability, but the stability of that one rubric.",
+    "pc3.t":"Exit when ready","pc3.d":"After consecutive passes, it proactively reduces nudges and tells you to go interview. Its job isn't to keep you — it's to prove the week wasn't wasted.",
+    "fineprint":"Demo prototype: questions, scores and history are illustrative; scoring uses local rules.",
+    "diag.eyebrow":"Step 1 / 6 · Diagnose gap","diag.h2":"Find the gap, then generate","diag.lede":"Three inputs: the role you're interviewing for, your background, and your gut feel on where you'll lose points. The diagnosis decides which dimension today's question stresses.",
+    "diag.roleH":"Target role","diag.roleEn":"Role","diag.bgH":"Background","diag.bgEn":"Background",
+    "diag.bgPh":"e.g. 3 yrs B2B product; built SaaS reporting & permissions; no big-tech background","diag.bgHint":"One or two sentences — only to make the question fit your real experience","diag.fillBg":"Fill sample background",
+    "diag.gapH":"Self-check","diag.gapEn":"Self-check","diag.gapHint":"Pick one of four. If unsure, trust your gut — we recalibrate after scoring.",
+    "diag.gen":"Generate diagnosis","diag.back":"Back to home",
+    "diag.errT":"One self-check missing","diag.errD":"Please pick the option closest to you on the right — it decides which dimension today's question stresses.",
+    "q.eyebrow":"Step 2 / 6 · Generate","q.h2":"Question generated for your role & gap","q.lede":"The same role draws from the same bank, so practice at different times stays comparable.",
+    "q.loadMsg":"Preparing the question bank…","q.failT":"Question generation failed","q.failD":"Possible network drop or service timeout. Your role and background are saved — retrying won't lose what you entered.",
+    "q.retry":"Retry generation","q.backBg":"Edit background","q.tagType":"Behavioral","q.followH":"Likely follow-ups",
+    "q.start":"Start answering","q.swap":"Swap for another of the same type","q.whyH":"Why this question","q.whyEn":"Why this one",
+    "q.prepareT":"Prep ~30s, answer ~3min · thinking for","ans.eyebrow":"Step 3 / 6 · Answer",
+    "ans.h2":"Answer like you're in the interview","ans.lede":"It doesn't need pretty typing — structure and evidence matter. After submit it scores every dimension on the same rubric.",
+    "ans.h3":"Your answer","ans.h3En":"Your answer","ans.ph":"Lead with the conclusion, then the reasoning. Try: Conclusion → Context → My call → Result.",
+    "ans.cnt":"0 chars · aim for 200–400","ans.time":"Time 0:00","ans.mic":"Voice answer (demo)","ans.sample":"Fill sample answer","ans.clear":"Clear",
+    "ans.errT":"Can't score yet","ans.errD":"Answer too short — the rubric can't read signal. At least 30 chars; if stuck, tap 'Fill sample answer' to see the structure.",
+    "ans.errLongT":"Tighten before submitting","ans.errLongD":"Currently {n} chars — too long loses structure points. Cut the preamble, lead with the conclusion.",
+    "ans.submit":"Submit & score","ans.back":"Back to question",
+    "score.eyebrow":"Step 4 / 6 · Score","score.total":"Total / 100",
+    "rule.role":"Role","rule.rubric":"Rubric","rule.rubricVal":"4 dims × 25","rule.type":"Question type",
+    "score.noteT":"About this score:","score.noteD":"It's a demo result from local rules on a fixed rubric, meant to validate the score → compare interaction — not a real ability assessment. When a model is attached, the rubric and dimensions stay; only the judge changes.",
+    "score.cta":"See progress curve","score.back":"Back to answer",
+    "prog.eyebrow":"Step 5 / 6 · Progress signal","prog.h2":"Did this week count?","prog.chartHint":"The dashed line is the pass mark. The line only represents 'repeated measurement of the same thing' when role, rubric and question type are unchanged.",
+    "prog.dimH":"Dimension detail & change","prog.cta.stepback":"See exit mechanism","prog.cta.nextrep":"One more rep (same role)",
+    "sb.eyebrow":"Step 6 / 6 · Exit mechanism","sb.h2":"It should think of letting go before you do","sb.lede":"The biggest problem with a practice tool is keeping the user inside. Here the exit condition is written in the open, and is testable.",
+    "sb.consecutive":"consecutive passes","sb.switchT":"Auto-downgrade after passing: one Monday nudge","sb.switchD":"From 'practice whenever' to 'one fixed weekly review' — fewer irrelevant nudges.",
+    "sb.cta.end":"End cycle & export summary","sb.cta.back":"Back to progress",
+    "foot.l":"vivi (Lin Ziwei) · HW03 coursework","foot.r":"REPS · clickable prototype",
+    "auth.btn":"Log in / Sign up","auth.title":"Log in / Sign up","auth.login":"Log in","auth.register":"Sign up","auth.close":"Close",
+    "auth.user":"Username","auth.userPh":"e.g. vivi","auth.pass":"Password","auth.passPh":"At least 6 characters",
+    "auth.submitLogin":"Log in","auth.submitRegister":"Sign up",
+    "auth.note":"Demo only: no real account is created — a mock login state is saved locally and kept on refresh.",
+    "auth.hi":"Hi, {user}","auth.logoutTitle":"Click to log out",
+    "auth.toastLogin":"Signed in as {user} (demo)","auth.toastRegister":"Demo account created: {user}","auth.toastLogout":"Signed out (demo)",
+    "auth.errUser":"Please enter a username","auth.errPass":"Password needs at least 6 characters",
+    "dr.title":"Design notes · From report to prototype","dr.close":"Close",
+    "dr.h1":"I. Which Report (2) claim each step maps to","dr.col1":"Prototype step","dr.col2":"Basis",
+    "dr.r1a":"Diagnose gap","dr.r1b":"Fig.7 loop, first ring 'diagnose gap (AINA's order)' — diagnose then generate, instead of letting users pick content",
+    "dr.r2a":"Generate by role","dr.r2b":"Table 4 scenario: 1–2 weeks before interview, self-practice behavioral & case questions; generated by role & background",
+    "dr.r3a":"Same-rubric scoring","dr.r3b":"Table 6 moat: consistent rubric + personal progress curve, not general AI ability",
+    "dr.r4a":"Progress curve","dr.r4b":"Fig.7 loop 'log progress curve → vertically comparable'; Table 5 success: see strength week over week",
+    "dr.r5a":"Exit mechanism","dr.r5b":"Conclusion: when the user no longer needs it, the tool should step aside",
+    "dr.h2":"II. Why we insist on 'three unchanged'","dr.p2":"For a progress signal to hold, the repeated measurement must be of the same thing. That's why role, rubric and question type are labeled explicitly on both the score and the chart — if any change, scores stop being comparable, and the product says so instead of faking an upward line.",
+    "dr.h3":"III. MVP scope (what this prototype deliberately skips)",
+    "dr.b1":"No full platform, social or leaderboard — a rank records activity, not ability","dr.b2":"No self-built large bank or full-role coverage; only 4 roles with same-type questions",
+    "dr.b3":"No real model: local rules run the loop first (swap in model scoring next)","dr.b4":"No real accounts or cloud sync (the top-right Log in / Sign up is UI demo only, no backend); data stays in the browser",
+    "dr.h4":"IV. Interaction-state coverage","dr.s1t":"Loading","dr.s1d":"Generation shows staged progress text, not a single spinner","dr.s2t":"Failure","dr.s2d":"Failed generation retries in place; entered content is kept (see switches below)",
+    "dr.s3t":"Empty","dr.s3d":"With fewer than two practices, no fake line — explanation and guidance instead","dr.s4t":"Boundary","dr.s4d":"Empty submit, over-long answer, char & time hints",
+    "dr.s5t":"Accessibility","dr.s5d":"Keyboard reachable, aria-live score announce, reduced-motion supported","dr.s6t":"Reversibility","dr.s6d":"Clear answer, swap question, restart, return to any completed step",
+    "dr.h5":"V. Demo switches","dr.t1t":"Simulate generation failure","dr.t1d":"Next generation triggers the failure state, for demonstrating the retry path in class","dr.t1a":"Simulate generation failure",
+    "dr.t2t":"Demo data","dr.t2d":"3 weeks of history + sample answer, to show the curve without real accumulation","dr.t2a":"Load demo data",
+    "dr.t3t":"Local progress","dr.t3b":"Clear data","dr.h6":"VI. Disclaimer","dr.p6":"This prototype is a product-design reference. Questions, scoring rules and history are demonstration content and constitute no ability assessment; implementation should follow your company's compliance and legal review.",
+    "sb.remindAria":"Toggle Monday reminder",
+    "ctx.idle":"No role selected","ctx.gap":"Gap · ","ctx.practiced":"Practiced {n}×",
+    "diag.lead":"Diagnosis result · DIAGNOSIS","diag.bigPrefix":"Where you'll likely lose points: ","diag.descMid":". Based on your self-check, today's question focuses on ","diag.descEnd":" — it still tests all four, but the feedback zooms in here first.",
+    "diag.kvRole":"Target role","diag.kvFocus":"Focus","diag.kvLib":"Bank","diag.libVal":"{code}-014 Behavioral","diag.genToday":"Generate today's question","diag.rediag":"Edit background or gap",
+    "score.h2Base":"First, set a baseline","score.h2Nth":"Same rubric, reading #{n}",
+    "score.headUp":"{d} points up from last","score.headFlat":"On par with last","score.headDown":"{d} points below last","score.headBase":"This is your baseline",
+    "score.subPrev":"A second reading under the same role, rubric and question type. The difference isn't difficulty — it's how you organized this time.",
+    "score.subBase":"First practice has no comparison; it's just the baseline. Next time's score subtracts from it — that's the signal.",
+    "score.ledePrev":"Same rubric as the {label} session. The score doesn't matter; the gap from last time does.",
+    "score.ledeBase":"First practice only produces a baseline. From next time, scores become comparable.",
+    "score.chipBase":"Baseline · no comparison yet","score.hit":"Passed","score.diff":"{d} short",
+    "score.dimFirst":"First record","score.dimVs":" vs last","score.dimFlat":"On par with last",
+    "score.fixH":"Only two things to fix next","score.fixHEn":"Next two reps","score.holdLead":"Your steadiest dimension this time: ","score.holdTail":"({v}/25) — no extra time needed on it next.",
+    "prog.ledeEmpty":"A progress signal needs at least two same-rubric practices to hold.","prog.lede":"{n} same-rubric practices, from {first} to {last}.",
+    "prog.emptyT":"Not enough history yet","prog.emptyD":"Only {n} record(s) so far. Fewer than two, and the line shows no real trend — this prototype won't fake progress with a made-up line.",
+    "prog.demoBtn":"Load demo data (3 weeks + this rep)","prog.repractice":"One more rep",
+    "prog.sigCur":"This rep · {label}","prog.sigCum":"Cumulative vs first","prog.sigCumSub":"{n} records, {ups} up","prog.sigTargetUp":"Passed","prog.sigTargetDown":"{d} short",
+    "prog.cmpTitle":"Why this is comparable (met this time):","prog.cmpBody":"Role '{role}', rubric '4 dims × 25', question type 'Behavioral' match the last session.<br>Gain comes mainly from <b>{up}</b>; watch <b>{down}</b> lagging — a rising total hides single-dimension drops most easily.",
+    "sb.gateHit":"Exit condition met: drop to weekly","sb.gateNoHit":"Exit not triggered yet (consecutive passes {n}/{need})",
+    "sb.gateSubHit":"You've passed {t} for {n} sessions straight. This tool is now worth less than a real interview — keep only one Monday review nudge.",
+    "sb.gateSubNoHit":"{need} more passes trigger the downgrade. This rule is in the open: it's built to let you leave, not to trap you.",
+    "sb.rule1":"Trigger: {need} consecutive ≥ {t}","sb.rule1d":"The pass line is fixed at {t} and never rises with your score — otherwise you'd never reach the end.",
+    "sb.rule2":"Downgrade: 'whenever' → 'weekly'","sb.rule2d":"Keep only one Monday review nudge; turn off the rest — no fake urgency.",
+    "sb.rule3":"End the cycle unilaterally, take the summary","sb.rule3d":"On exit, show this cycle's score change, held dimensions and those still needing work — no retention copy.",
+    "cyc.emptyLead":"Cycle summary · SUMMARY","cyc.emptyBig":"No records to summarize yet","cyc.emptyD":"Complete at least one practice before ending the cycle.",
+    "cyc.lead":"Cycle summary · CYCLE SUMMARY","cyc.big":"{first} → {last}, {n} practices",
+    "cyc.dTotal":"Cumulative change <b>{d}</b>.","cyc.up":"Held steady: <b>{x}</b>.","cyc.rest":"Still needs work: <b>{x}</b> — next time, bring just these two questions.",
+    "cyc.allup":"All four dimensions improved vs the first rep; no obvious weak spot left this cycle.","cyc.kvRole":"Role","cyc.kvN":"Practices","cyc.kvState":"Status","cyc.pass":"Passed","cyc.fail":"Not passed",
+    "cyc.end":"The summary ends here. This tool gives no more advice — go interview.","cyc.back":"Back to progress","cyc.restart":"Start new cycle",
+    "q.stage1":"Reading role & background…","q.stage2":"Matching same-type questions (for comparability)…","q.stage3":"Tuning the focus to your gap…","q.stage4":"Generating question & follow-ups…",
+    "toast.bg":"Sample background filled — edit freely","toast.sample":"Sample answer filled (demo text; edit then submit)","toast.mic":"Transcribed to text (demo: no real speech recognition)",
+    "toast.scored":"Scored on the same rubric","toast.remindOn":"Monday reminder on","toast.remindOff":"Reminder off",
+    "toast.failOn":"On: next generation will demo failure","toast.failOff":"Failure simulation off","toast.demoOff":"Demo flag cleared (history kept)",
+    "toast.demo":"Demo data loaded: {n} records ({m} fictional)","toast.newCycle":"New cycle started: history cleared, rubric & role kept","toast.wiped":"Local data cleared, back to initial","toast.restored":"Restored last local progress (clear data to restart)"
+  }
+};
+var LANG = (function(){ try{ return localStorage.getItem("reps-lang") || "zh"; }catch(e){ return "zh"; } })();
+
+function _(k, p){
+  var s = I18N[LANG] && I18N[LANG][k] != null ? I18N[LANG][k] : (I18N.zh[k] != null ? I18N.zh[k] : k);
+  if(p){ for(var key in p){ if(Object.prototype.hasOwnProperty.call(p,key)) s = s.split("{"+key+"}").join(p[key]); } }
+  return s;
+}
+function applyStatic(){
+  document.querySelectorAll("[data-i18n]").forEach(function(el){ var v=_(el.getAttribute("data-i18n")); if(v!=null) el.textContent=v; });
+  document.querySelectorAll("[data-i18n-html]").forEach(function(el){ var v=_(el.getAttribute("data-i18n-html")); if(v!=null) el.innerHTML=v; });
+  document.querySelectorAll("[data-i18n-ph]").forEach(function(el){ var v=_(el.getAttribute("data-i18n-ph")); if(v!=null) el.placeholder=v; });
+  document.querySelectorAll("[data-i18n-aria]").forEach(function(el){ var v=_(el.getAttribute("data-i18n-aria")); if(v!=null) el.setAttribute("aria-label",v); });
+}
+function setLang(l){
+  LANG = (l==="en") ? "en" : "zh";
+  try{ localStorage.setItem("reps-lang", LANG); }catch(e){}
+  document.documentElement.lang = (LANG==="en") ? "en" : "zh-CN";
+  document.querySelectorAll(".lang-switch button").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-lang")===LANG); });
+  applyStatic();
+  renderCurrent();
+}
+
+/* ===================== 数据层（双语） ===================== */
+var ROLES = [
+  { id:"pm", label:"产品经理（B 端）", labelEn:"Product Manager (B2B)", code:"PM",
+    kw:["需求","客户","数据","优先级","取舍","上线","访谈","场景","体验","功能","方案","指标","归因","版本"],
+    kwEn:["requirement","customer","data","priority","trade","launch","interview","scenario","experience","feature","plan","metric","root","version"],
+    bg:"3 年 B 端产品，做过 SaaS 报表与权限模块，无大厂经历",
+    bgEn:"3 yrs B2B product; built SaaS reporting & permissions; no big-tech background",
+    q:{ main:"你负责的一个 B 端功能上线三个月后，客户活跃度持续下滑。你会怎么定位这个问题？",
+        mainEn:"A B2B feature you own dropped in customer activity three months after launch. How would you pin down the problem?",
+        follow:["你会先用哪一类数据判断「是需求变了」还是「功能不好用」？","如果资源只够做一个改进，你选哪个？为什么是它？"],
+        followEn:["What data would you check first to tell 'changed needs' from 'hard-to-use feature'?","If you can only ship one fix, which and why?"],
+        why:"这道题压的是两个动作：面对模糊现象时的<b>定位顺序</b>，以及资源受限时的<b>取舍理由</b> —— B 端产品岗位几乎每天都在重复这两件事，也最能看出结构是否清晰。",
+        whyEn:"This tests two moves: your <b>order of diagnosis</b> when the signal is fuzzy, and your <b>reasoning for trade-offs</b> under constraint — B2B PMs repeat these daily, and they reveal whether your structure is clear." },
+    ex:"我会先把问题拆开来看。第一步确认现象：是哪一类客户在下滑，集中在哪个功能模块；第二步区分原因，是功能不好用，还是他们的需求变了；第三步找 3 到 5 位客户做访谈，拿到一手信息；最后再决定是优化体验还是补功能。如果是我的项目，我会优先做用户访谈，因为数据只能说明现象、不能说明原因，而资源只够做一个改进时，判断错了代价最大。",
+    exEn:"I'd break the problem into steps. First, confirm the symptom: which customer segment is dropping, in which module. Second, separate causes — is the feature hard to use, or did their needs change. Third, interview 3–5 customers for first-hand signal. Then decide whether to fix UX or add capability. I'd prioritize interviews: data shows the symptom, not the cause, and with only one fix available, a wrong bet is the costliest mistake." },
+
+  { id:"da", label:"数据分析师", labelEn:"Data Analyst", code:"DA",
+    kw:["数据","指标","口径","样本","报表","归因","异常","看板","实验","对比","分层","量化"],
+    kwEn:["data","metric","definition","sample","report","root","anomaly","dashboard","experiment","compare","segment","quantify"],
+    bg:"应届统计背景，做过电商用户留存分析，熟练 SQL 与看板搭建",
+    bgEn:"Stats grad; e-commerce retention analysis; fluent in SQL & dashboards",
+    q:{ main:"业务方说「数据不对」，但你的口径没有改过。你会怎么处理这件事？",
+        mainEn:"A stakeholder says 'the numbers are wrong,' but your definition never changed. How do you handle it?",
+        follow:["你会怎么判断是数据问题还是业务问题？","如果两边都不认，你会拿出什么证据来推进结论？"],
+        followEn:["How do you tell a data issue from a business issue?","If neither side budges, what evidence do you bring to move forward?"],
+        why:"它的重点不在 SQL 写得多好，而在于有没有<b>先对齐口径再归因</b>的顺序 —— 这是分析师在业务现场最常被质疑、也最容易失分的地方。",
+        whyEn:"It's not about SQL skill, but whether you <b>align on definitions before attributing cause</b> — the moment analysts get challenged most, and lose the most points." },
+    ex:"我会先把问题拆成三步。第一步对齐口径：这个指标的定义、统计周期和排除项是什么，先确认不是口径变更造成的假下滑；第二步做分层归因，按渠道、新老客、区域拆开，看是某一层在拖整体；第三步做假设验证，用一个小样本的对照实验确认原因；最后给结论。数据只能说明现象，不能说明原因，所以我会先做归因再动手改策略。",
+    exEn:"Three steps. First, align on definitions: what the metric means, its window and exclusions — confirm it's not a fake drop from a definition change. Second, layered attribution: split by channel, new vs returning, region to find the dragging layer. Third, hypothesis testing with a small controlled experiment. Then conclude. Data shows the symptom, not the cause, so I attribute before acting." },
+
+  { id:"dev", label:"后端研发", labelEn:"Backend Engineer", code:"BE",
+    kw:["接口","服务","性能","数据库","缓存","并发","链路","排查","日志","容量","重构","上线","监控","压测"],
+    kwEn:["api","service","performance","database","cache","concurrency","link","debug","log","capacity","refactor","launch","monitor","load"],
+    bg:"2 年后端，做过订单与支付链路，熟悉 Java 与 Redis",
+    bgEn:"2 yrs backend; order & payment flows; Java & Redis",
+    q:{ main:"线上某个接口的耗时突然从 80ms 涨到 800ms。在没有任何告警的情况下，你会按什么顺序排查？",
+        mainEn:"A production API's latency jumped from 80ms to 800ms with no alert. In what order do you troubleshoot?",
+        follow:["你怎么区分是数据库、缓存还是下游服务的问题？","改完之后，你会用什么方式确认不会再犯？"],
+        followEn:["How do you isolate DB vs cache vs downstream?","After the fix, how do you make sure it won't recur?"],
+        why:"它考的不是背知识点，而是<b>排查顺序是否可复述</b>：先看影响面、再定位链路、最后才是动手改 —— 顺序错了，越改越乱。",
+        whyEn:"It tests not memorized facts but a <b>repeatable troubleshooting order</b>: scope the impact, locate the link, then change — wrong order means more chaos." },
+    ex:"我会先确认现象和影响面：是全部请求变慢，还是只有某个接口；然后看监控和日志，把链路拆开，区分是数据库慢查询、缓存命中率下降，还是下游服务超时；接着在预发环境用压测复现，确认根因再改；最后上线前保留回滚方案。排查顺序比结论更重要，先定位再动手。",
+    exEn:"First confirm the symptom and blast radius: all requests slow, or just one endpoint. Then check monitoring and logs, split the chain to tell DB slow-query, cache miss-rate, or downstream timeout. Reproduce in staging with load test, confirm root cause, then change. Keep a rollback ready before launch. Order matters more than the conclusion — locate before you touch." },
+
+  { id:"ops", label:"运营 / 增长", labelEn:"Operations & Growth", code:"OP",
+    kw:["用户","活动","转化","留存","渠道","投放","拉新","复购","内容","策略","数据","成本"],
+    kwEn:["user","campaign","conversion","retention","channel","spend","acquisition","repurchase","content","strategy","data","cost"],
+    bg:"1 年用户增长，做过社群拉新与活动投放",
+    bgEn:"1 yr growth; community acquisition & campaign spend",
+    q:{ main:"你接手的一个产品，最近四周新增用户没变，但复购掉了 15%。你会先做什么？",
+        mainEn:"On a product you took over, new users held flat for four weeks but repurchase dropped 15%. What do you do first?",
+        follow:["你会怎么拆解这 15% 的来源？","如果预算只够试一个方案，你选哪个，怎么判断它有效？"],
+        followEn:["How would you break down that 15%?","If budget covers one test, which and how do you know it worked?"],
+        why:"这道题同时看<b>拆解问题的层次</b>与<b>小成本验证的习惯</b> —— 运营岗位最怕花钱买结论，最值钱的是先用小样本验证再放大。",
+        whyEn:"It checks your <b>level of decomposition</b> and habit of <b>low-cost validation</b> — ops fears buying conclusions with money; the valuable part is validating on a small sample before scaling." },
+    ex:"我会先看数据分层：是新用户少，还是老用户不复购；然后按渠道拆开，看是某一个渠道的转化掉了；接着做小范围测试，用一个活动或文案变体验证假设；最后把有效的做法固化下来。拉新和留存的杠杆不一样，我会先确认是哪一端出问题，再决定投预算。",
+    exEn:"First slice the data: fewer new users, or old users not repurchasing. Then split by channel to see which conversion dropped. Run a small test — one campaign or copy variant — to validate the hypothesis. Then codify what worked. Acquisition and retention have different levers, so I confirm which end broke before spending budget." }
+];
+
+var GAPS = [
+  { id:"structure", label:"结构散", labelEn:"Messy", dim:"structure", desc:"想说的太多，讲完对方记不住主线", descEn:"Too much to say; listener loses the thread" },
+  { id:"evidence",  label:"论据弱", labelEn:"Thin",  dim:"evidence",  desc:"形容词多，拿不出数字和事实",       descEn:"Lots of adjectives, few numbers or facts" },
+  { id:"relevance", label:"不贴岗", labelEn:"Off-role", dim:"relevance", desc:"讲的是通用经验，听不出与岗位的关系", descEn:"Generic experience; no link to the role" },
+  { id:"clarity",   label:"表达绕", labelEn:"Roundabout", dim:"clarity", desc:"铺垫太长，结论埋在最后",            descEn:"Too much setup; conclusion buried at the end" }
+];
+
+var DIMS = [
+  { id:"structure", label:"结构",       en:"Structure", desc:"是否有清晰框架，层次可跟随" },
+  { id:"evidence",  label:"论据与量化", en:"Evidence",  desc:"主张是否有事实或数字支撑" },
+  { id:"relevance", label:"岗位相关度", en:"Relevance", desc:"是否回扣该岗位的核心动作" },
+  { id:"clarity",   label:"表达清晰度", en:"Clarity",   desc:"结论是否先行、有无冗余" }
+];
+
+var FIXES = {
+  structure:{ t:"把结论放在第一句", tEn:"Lead with your conclusion",
+    d:"按「结论 → 背景 → 我的判断 → 结果」四段展开，每段不超过三句，让听的人随时能接上主线。",
+    dEn:"Use Conclusion → Context → My call → Result, max three sentences each, so the listener can follow anytime." },
+  evidence: { t:"把一个形容词换成一个数字", tEn:"Swap one adjective for a number",
+    d:"「效果不错」改成「3 周内周活从 41% 回到 58%」—— 规模、变化幅度、时间窗口，三样至少给两样。",
+    dEn:"Replace 'worked well' with 'weekly active rose 41%→58% in 3 weeks' — give at least two of: scale, delta, window." },
+  relevance:{ t:"落到这个岗位的动作上", tEn:"Anchor it to the role's work",
+    d:"回答里至少出现一次该岗位的核心动作（如 B 端的「客户分层 / 需求取舍 / 上线节奏」），把通用经验翻译成岗位语境。",
+    dEn:"Mention at least one core move of the role (e.g. B2B 'segment customers / trade-offs / launch cadence'), translating generic experience into role context." },
+  clarity:  { t:"删掉铺垫，收紧到 200 字内", tEn:"Cut the setup, tighten under 200 words",
+    d:"去掉「我觉得 / 其实 / 就是」这类填充词，长句拆成两句，先给结论再给理由。",
+    dEn:"Drop fillers like 'I think / actually / basically', split long sentences, conclusion first." }
+};
+
+var HOLD = {
+  structure:"结构是这次最稳的一环，保持「先结论后展开」的习惯即可。",
+  evidence:"论据是这次最扎实的一环，继续保持用数字说话的做法。",
+  relevance:"岗位相关度是这次最稳的一环，通用经验与岗位语境的翻译做得不错。",
+  clarity:"表达是这次最清爽的一环，保持住这个长度与节奏。",
+  structureEn:"Structure was your strongest link — keep leading with the conclusion.",
+  evidenceEn:"Evidence was your solidest link — keep letting numbers speak.",
+  relevanceEn:"Role relevance was your steadiest link — your translation of generic experience into role context landed.",
+  clarityEn:"Clarity was your cleanest link — keep this length and rhythm."
+};
+
+var DEMO_HISTORY = [
+  { label:"9/05", labelEn:"9/05", total:58, dims:{ structure:14, evidence:11, relevance:17, clarity:16 } },
+  { label:"9/12", labelEn:"9/12", total:66, dims:{ structure:18, evidence:13, relevance:19, clarity:16 } },
+  { label:"9/19", labelEn:"9/19", total:74, dims:{ structure:21, evidence:15, relevance:21, clarity:17 } }
+];
+
+var TARGET = 80;
+var PASS_NEED = 2;
+var STORE = "reps-proto-v1";
+
+/* ===================== 状态 ===================== */
+var S = {
+  role:"pm", bg:"", gap:null, question:null, answer:"", score:null,
+  history:[], demo:false, failNext:false, reminder:false, msgIdx:1
+};
+var CUR = "home";
+var qTimerId = null, qStartTs = 0, aTimerId = null, aStartTs = 0, micTimer = null, toastTimer = null;
+
+function $(id){ return document.getElementById(id); }
+function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+/* 双语取值助手 */
+function roleObj(){ return ROLES.find(function(r){ return r.id===S.role; }) || ROLES[0]; }
+function roleLabel(r){ return LANG==="en" ? r.labelEn : r.label; }
+function roleBg(r){ return LANG==="en" ? r.bgEn : r.bg; }
+function roleKw(r){ return LANG==="en" ? r.kwEn : r.kw; }
+function roleEx(r){ return LANG==="en" ? r.exEn : r.ex; }
+function qMain(r){ return LANG==="en" ? r.q.mainEn : r.q.main; }
+function qFollow(r){ return LANG==="en" ? r.q.followEn : r.q.follow; }
+function qWhy(r){ return LANG==="en" ? r.q.whyEn : r.q.why; }
+function gapObj(){ return GAPS.find(function(g){ return g.id===S.gap; }); }
+function gapLabel(g){ return g ? (LANG==="en"?g.labelEn:g.label) : ""; }
+function dimLabel(id){ var d=DIMS.find(function(x){return x.id===id;}); return d ? (LANG==="en"?d.en:d.label) : id; }
+
+/* ===================== 持久化 ===================== */
+function save(){
+  try{
+    localStorage.setItem(STORE, JSON.stringify({
+      role:S.role, bg:S.bg, gap:S.gap, question:S.question, answer:S.answer,
+      score:S.score, history:S.history, demo:S.demo, failNext:S.failNext, reminder:S.reminder
+    }));
+  }catch(e){}
+}
+function load(){
+  try{
+    var raw = localStorage.getItem(STORE); if(!raw) return false;
+    var o = JSON.parse(raw); if(!o || typeof o!=="object") return false;
+    ["role","bg","gap","question","answer","score","history","demo","failNext","reminder"].forEach(function(k){
+      if(o[k]!==undefined && o[k]!==null) S[k]=o[k];
+    });
+    if(!Array.isArray(S.history)) S.history=[];
+    return true;
+  }catch(e){ return false; }
+}
+function wipe(){
+  try{ localStorage.removeItem(STORE); }catch(e){}
+}
+
+/* ===================== 通用 UI ===================== */
+function toast(msg){
+  var t=$("toast"); t.textContent=msg; t.classList.add("on");
+  clearTimeout(toastTimer); toastTimer=setTimeout(function(){ t.classList.remove("on"); }, 3200);
+}
+function showErr(box,t,d){ $(box).hidden=false; if(t)$(box+"T").textContent=t; if(d)$(box+"D").textContent=d; }
+function hideErr(box){ $(box).hidden=true; }
+function fmtTime(ms){ var s=Math.floor(ms/1000); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+
+/* ===================== 步骤导航 ===================== */
+var STEPS = [
+  { key:"diagnose", n:"Step 1", t:"诊断卡点", tEn:"Diagnose" },
+  { key:"question", n:"Step 2", t:"生成题目", tEn:"Generate" },
+  { key:"answer",   n:"Step 3", t:"完成作答", tEn:"Answer" },
+  { key:"score",    n:"Step 4", t:"标准评分", tEn:"Score" },
+  { key:"progress", n:"Step 5", t:"进步曲线", tEn:"Progress" },
+  { key:"stepback", n:"Step 6", t:"退场机制", tEn:"Exit" }
+];
+function renderStepper(cur){
+  var idx = STEPS.findIndex(function(s){ return s.key===cur; });
+  var en = (LANG==="en");
+  $("stepper").innerHTML = STEPS.map(function(s,i){
+    var cls = i<idx ? "done" : (i===idx ? "on" : "");
+    var label = en ? (s.tEn || s.t) : s.t;
+    return '<li class="'+cls+'"><span class="n">'+s.n+'</span><span class="t">'+label+'</span></li>';
+  }).join("");
+}
+function go(name, force){
+  CUR = name;
+  document.querySelectorAll(".screen").forEach(function(el){
+    el.classList.toggle("on", el.getAttribute("data-screen")===name);
+  });
+  renderStepper(name);
+  var scr = document.querySelector('[data-screen="'+name+'"]');
+  if(scr){ var h=scr.querySelector("h1,h2"); if(h) h.focus({preventScroll:true}); }
+  window.scrollTo({ top:0, behavior:"smooth" });
+  if(name==="question"){
+    if(force || !S.question || S.question.role !== S.role){ genQuestion(); } else { buildQuestion(); }
+  }
+  if(name==="answer")  { renderAnswerScreen(); }
+  if(name==="score")   { renderScore(); }
+  if(name==="progress"){ renderProgress(); }
+  if(name==="stepback"){ renderStepback(); }
+  if(name==="home")    { renderHome(); }
+  if(name!=="answer") stopAnswerTimer();
+  if(name!=="question") stopQTimer();
+}
+function renderCurrent(){
+  if(CUR==="question"){ if(S.question && !$("qLoading")||S.question) { if(S.question && !$("qBody").hidden) buildQuestion(); } }
+  else if(CUR==="answer") renderAnswerScreen();
+  else if(CUR==="score") renderScore();
+  else if(CUR==="progress") renderProgress();
+  else if(CUR==="stepback") renderStepback();
+  else if(CUR==="home") renderHome();
+  else if(CUR==="diagnose") renderDiagnose();
+  renderStepper(CUR);
+  applyStatic();
+  renderAuth();
+}
+
+/* ===================== 顶部上下文 ===================== */
+function renderCtx(){
+  var p=$("ctxPill");
+  if(!S.gap && !S.bg){ p.className="pill pill-idle"; p.textContent=_( "ctx.idle" ); }
+  else{
+    var parts=[roleLabel(roleObj())];
+    var g=gapObj(); if(g) parts.push(_("ctx.gap")+gapLabel(g));
+    if(S.history.length) parts.push(_("ctx.practiced",{n:S.history.length}));
+    p.className="pill"; p.textContent=parts.join("　·　");
+  }
+}
+
+/* ===================== 首页 ===================== */
+function sparkSVG(series){
+  var W=300,H=92,pl=8,pr=8,pt=12,pb=16;
+  var vals=series.map(function(s){return s.total;});
+  var lo=Math.max(30,Math.floor((Math.min.apply(null,vals)-8)/5)*5), hi=100;
+  function X(i){ return series.length===1?pl:pl+(W-pl-pr)*i/(series.length-1); }
+  function Y(v){ return pt+(H-pt-pb)*(1-(v-lo)/(hi-lo)); }
+  var line=series.map(function(s,i){ return (i?"L":"M")+X(i).toFixed(1)+","+Y(s.total).toFixed(1); }).join(" ");
+  var area=line+" L"+X(series.length-1).toFixed(1)+","+(H-pb)+" L"+X(0).toFixed(1)+","+(H-pb)+" Z";
+  var dots=series.map(function(s,i){ return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(s.total).toFixed(1)+'" r="3.4" fill="#2c5f8d"/>'; }).join("");
+  var lab=series.map(function(s,i){ return '<text x="'+X(i).toFixed(1)+'" y="'+(H-3)+'" font-size="9" fill="#93a2b1" text-anchor="middle">'+esc(LANG==="en"?s.labelEn:s.label)+'</text>'; }).join("");
+  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="demo trend">'+
+    '<defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a86c8" stop-opacity=".22"/><stop offset="1" stop-color="#4a86c8" stop-opacity="0"/></linearGradient></defs>'+
+    '<path d="'+area+'" fill="url(#sg)"/>'+
+    '<path d="'+line+'" fill="none" stroke="#2c5f8d" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>'+
+    dots+lab+'</svg>';
+}
+function renderHome(){
+  var resume=$("btnResumeHome"), demoBtn=$("btnDemoHome");
+  resume.hidden = !(S.score && S.answer);
+  if(S.history.length>=2){
+    demoBtn.textContent=_( "home.demoHas", {n:S.history.length} ) || _("home.demo");
+    demoBtn.onclick=function(){ go("progress"); };
+  }else{
+    demoBtn.textContent=_( "home.demo" );
+    demoBtn.onclick=function(){ loadDemo(); go("progress"); };
+  }
+  // 首页信号预览：用演示历史（若已载入则用真实历史）
+  var series = S.history.length ? S.history.slice() : DEMO_HISTORY.map(function(h){ return { label:h.label, labelEn:h.labelEn, total:h.total }; });
+  $("spSpark").innerHTML = sparkSVG(series);
+  renderCtx();
+}
+
+/* ===================== 诊断屏 ===================== */
+function renderDiagnose(){
+  $("roleChips").innerHTML = ROLES.map(function(r){
+    return '<button class="chip'+(r.id===S.role?" on":"")+'" data-role="'+r.id+'">'+roleLabel(r)+'</button>';
+  }).join("");
+  $("gapList").innerHTML = GAPS.map(function(g){
+    return '<button class="rc'+(g.id===S.gap?" on":"")+'" data-gap="'+g.id+'"><span class="dot"></span><span><b>'+gapLabel(g)+'</b><span>'+(LANG==="en"?g.descEn:g.desc)+'</span></span></button>';
+  }).join("");
+  $("bgInput").value = (LANG==="en") ? (S.bgEn||"") : (S.bg||"");
+  if(S.gap) renderDiagResult(false);
+  else { $("diagResult").hidden = true; }
+}
+function renderDiagResult(scroll){
+  var g = gapObj(); if(!g) return;
+  var r = roleObj();
+  $("diagResult").innerHTML =
+    '<div class="diag">'+
+      '<p class="lead">'+_("diag.lead")+'</p>'+
+      '<p class="big">'+_("diag.bigPrefix")+gapLabel(g)+'</p>'+
+      '<p>'+esc(LANG==="en"?g.descEn:g.desc)+_("diag.descMid")+'<b>'+dimLabel(g.dim)+'</b>'+_("diag.descEnd")+'</p>'+
+      '<div class="kv">'+
+        '<div><span>'+_("diag.kvRole")+'</span><b>'+roleLabel(r)+'</b></div>'+
+        '<div><span>'+_("diag.kvFocus")+'</span><b>'+dimLabel(g.dim)+'</b></div>'+
+        '<div><span>'+_("diag.kvLib")+'</span><b>'+_( "diag.libVal", {code:r.code} )+'</b></div>'+
+      '</div>'+
+      '<div class="cta-row" style="margin-top:20px">'+
+        '<button class="btn primary" data-go="question">'+_("diag.genToday")+
+          '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2.5 8h10M9 4.6L12.4 8 9 11.4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
+        '</button>'+
+        '<button class="btn quiet" id="btnRediag">'+_("diag.rediag")+'</button>'+
+      '</div>'+
+    '</div>';
+  $("diagResult").hidden = false;
+  if(scroll) $("diagResult").scrollIntoView({behavior:"smooth", block:"nearest"});
+  var rd=$("btnRediag"); if(rd) rd.onclick=function(){ $("diagResult").hidden=true; $("bgInput").focus(); };
+}
+
+/* ===================== 出题屏 ===================== */
+function genQuestion(){
+  stopQTimer();
+  $("qBody").hidden = true; $("qFail").hidden = true; $("qLoading").hidden = false;
+  var stages=[_("q.stage1"),_("q.stage2"),_("q.stage3"),_("q.stage4")];
+  $("qSteps").innerHTML = stages.map(function(s){ return '<div><span class="tick"></span>'+esc(s)+'</div>'; }).join("");
+  $("qMsg").textContent = stages[0];
+  var i=0;
+  var tick = setInterval(function(){
+    var rows = $("qSteps").children;
+    if(i<rows.length) rows[i].classList.add("ok");
+    i++;
+    if(i>0 && i-1 < stages.length-1) $("qMsg").textContent = stages[i];
+    if(i>=stages.length){
+      clearInterval(tick);
+      $("qMsg").textContent = "✓";
+      setTimeout(function(){
+        if(S.failNext){
+          S.failNext=false; save();
+          $("qLoading").hidden = true; $("qFail").hidden = false;
+          syncToggles(); renderCtx();
+          return;
+        }
+        buildQuestion();
+      }, 320);
+    }
+  }, 430);
+}
+function buildQuestion(){
+  var r = roleObj(), q = r.q;
+  S.question = { role:S.role, main:qMain(r), follow:qFollow(r).slice(), why:qWhy(r), code:r.code+"-014" };
+  save();
+  $("qLoading").hidden = true; $("qFail").hidden = true; $("qBody").hidden = false;
+  $("qTagRole").textContent = roleLabel(r);
+  $("qTagType").textContent = _( "q.tagType" );
+  var g = gapObj();
+  $("qTagFocus").textContent = (LANG==="en"?"Focus · ":"重点校验 · ") + (g ? dimLabel(g.dim) : dimLabel("structure"));
+  $("qTagNo").textContent = (LANG==="en"?"Bank ":"题库编号 ") + S.question.code;
+  $("qText").textContent = qMain(r);
+  $("qFollow").innerHTML = qFollow(r).map(function(f){ return "<li>"+esc(f)+"</li>"; }).join("");
+  $("qWhy").innerHTML = "<h3>"+_("q.whyH")+" <span class=\"en\">"+_("q.whyEn")+"</span></h3><p style=\"margin-top:9px;font-size:14px;color:var(--ink-2)\">"+qWhy(r)+"</p>";
+  $("aQText").textContent = qMain(r);
+  startQTimer();
+  renderCtx();
+}
+function startQTimer(){
+  stopQTimer(); qStartTs = Date.now(); $("qTimer").textContent="0:00";
+  qTimerId = setInterval(function(){ $("qTimer").textContent = fmtTime(Date.now()-qStartTs); }, 1000);
+}
+function stopQTimer(){ if(qTimerId){ clearInterval(qTimerId); qTimerId=null; } }
+
+/* ===================== 作答屏 ===================== */
+function renderAnswerScreen(){
+  var r=roleObj(), g=gapObj();
+  $("aTagRole").textContent = roleLabel(r);
+  $("aQText").textContent = S.question ? S.question.main : qMain(r);
+  var ta=$("answerInput");
+  ta.value = (LANG==="en") ? (S.answerEn||"") : (S.answer||"");
+  syncAnswer();
+  $("ctxMini").innerHTML =
+    "<b>"+(LANG==="en"?"Context for this rep":"本次练习的上下文")+"</b> （"+(LANG==="en"?"logged with the score — the basis for comparability":"它会随成绩一起记录，是「可比」的依据")+"）：<br>"+
+    (LANG==="en"
+      ? ("Role · "+esc(roleLabel(r))+"　|　Focus · "+esc(g?dimLabel(g.dim):dimLabel("structure"))+"　|　Type · Behavioral　|　Rubric · 4×25"+(S.bgEn?"<br>Background · "+esc(S.bgEn):""))
+      : ("岗位 · "+esc(roleLabel(r))+"　|　重点维度 · "+esc(g?dimLabel(g.dim):"结构")+"　|　题目类别 · 行为题　|　量表 · 4 维 × 25 分"+(S.bg ? "<br>背景 · "+esc(S.bg) : "")));
+  startAnswerTimer();
+}
+function startAnswerTimer(){ stopAnswerTimer(); aStartTs=Date.now(); $("ansTime").textContent=_( "ans.time" );
+  aTimerId=setInterval(function(){ $("ansTime").textContent=_( "ans.time" ).replace("0:00", fmtTime(Date.now()-aStartTs)); },1000); }
+function stopAnswerTimer(){ if(aTimerId){ clearInterval(aTimerId); aTimerId=null; } }
+function syncAnswer(){
+  var ta=$("answerInput");
+  var v=ta.value;
+  var n=v.replace(/\s/g,"").length;
+  if(LANG==="en"){ S.answerEn=v; } else { S.answer=v; }
+  $("ansCount").textContent = (LANG==="en")
+    ? (n+" chars · aim for 200–400")
+    : (n+" 字 · 建议 200–400 字");
+  if(n>=30) hideErr("ansErr");
+  var over = n>900;
+  $("ansCount").style.color = over ? "#a63636" : "";
+  if(over){ $("ansCount").textContent = (LANG==="en") ? (n+" chars · too long, tighten under 400") : (n+" 字 · 偏长，建议压缩到 400 字内再提交"); }
+  save(); renderCtx();
+}
+
+/* ===================== 评分 ===================== */
+function scoreAnswer(text, roleId){
+  var t = (text||"").replace(/\s+/g,"");
+  var len = t.length;
+  var r = ROLES.find(function(x){return x.id===roleId;}) || ROLES[0];
+  var en = (LANG==="en");
+
+  var sRe = en ? /(first|then|next|finally|second|step|background|conclusion|break|layer|split|start|last)/gi
+              : /(先|然后|最后|其次|再|第一步|第二步|第三步|背景|结论|拆开|分层)/g;
+  var sHits = (t.match(sRe)||[]).length;
+  var structure = clamp(9 + sHits*2.4 + (len>160?3:0), 0, 25);
+
+  var nHits = (t.match(/\d+(?:\.\d+)?\s*(?:%|％|倍|万|个|天|周|月|人|次|位|条|轮|分钟|pp)/g)||[]).length;
+  var qRe = en ? /(data|metric|baseline|quantif|compare|benchmark|experiment|valid|evidence|measure)/gi
+              : /(数据|指标|口径|量化|对比|基准|实验|验证|依据)/g;
+  var qHits = (t.match(qRe)||[]).length;
+  var evidence = clamp(7 + nHits*4.6 + qHits*1.5, 0, 25);
+
+  var kHits = roleKw(r).filter(function(k){ return t.toLowerCase().indexOf(k.toLowerCase())>=0; }).length;
+  var relevance = clamp(10 + kHits*2.6, 0, 25);
+
+  var cRe = en ? /(i think|actually|kind of|like|maybe|sort of|basically|you know)/gi
+              : /(我觉得|其实|就是|那个|然后就是|可能吧|大概)/g;
+  var clutter = (t.match(cRe)||[]).length;
+  var clarity = clamp(22 - Math.abs(len-250)/24 - clutter*1.3, 0, 25);
+
+  var dims = {
+    structure: Math.round(structure),
+    evidence:  Math.round(evidence),
+    relevance: Math.round(relevance),
+    clarity:   Math.round(clarity)
+  };
+  var total = dims.structure + dims.evidence + dims.relevance + dims.clarity;
+  return { dims:dims, total:total, len:len, nHits:nHits };
+}
+
+function levelOf(v){
+  if(v>=85) return { t:_( "score.hit" ), c:"lvl" };
+  if(v>=TARGET) return { t:_( "score.hit" ), c:"lvl" };
+  if(v>=60) return { t:(LANG==="en"?"Near pass":"及格 · 接近达标"), c:"lvl mid" };
+  return { t:(LANG==="en"?"Needs work":"待改进"), c:"lvl low" };
+}
+function prevOf(res){
+  if(res && Object.prototype.hasOwnProperty.call(res,"baseline")) return res.baseline;
+  return S.history.length>1 ? S.history[S.history.length-2] : null;
+}
+function snapshotEntry(en){
+  return en ? { label:en.label, labelEn:en.labelEn, total:en.total, dims:JSON.parse(JSON.stringify(en.dims)) } : null;
+}
+
+function renderScore(){
+  var r = roleObj();
+  var res = S.score; if(!res) return;
+  var prev = prevOf(res);
+
+  $("ruleRole").textContent = roleLabel(r);
+  $("ruleType").textContent = _( "q.tagType" );
+  var nth = S.history.length || 1;
+  $("scoreH2").textContent = nth<=1 ? _( "score.h2Base" ) : _( "score.h2Nth", {n:nth} );
+  var lv = levelOf(res.total);
+  $("scoreLvl").className = lv.c;
+  $("scoreLvl").textContent = lv.t;
+  $("scoreHead").textContent = prev
+    ? (res.total>prev.total ? _( "score.headUp", {d:res.total-prev.total} ) : (res.total===prev.total ? _( "score.headFlat" ) : _( "score.headDown", {d:prev.total-res.total} )))
+    : _( "score.headBase" );
+  $("scoreSub").textContent = prev ? _( "score.subPrev" ) : _( "score.subBase" );
+  $("scoreLede").textContent = prev
+    ? _( "score.ledePrev", {label: LANG==="en"?prev.labelEn:prev.label} )
+    : _( "score.ledeBase" );
+
+  var arc=$("gaugeArc"), L=490;
+  arc.setAttribute("stroke-dashoffset", L);
+  setTimeout(function(){ arc.style.transition="stroke-dashoffset 1.05s cubic-bezier(.2,.7,.25,1)"; arc.setAttribute("stroke-dashoffset", (L - L*clamp(res.total,0,100)/100).toFixed(1)); }, 90);
+  countUp($("scoreNum"), res.total);
+
+  var chips=[];
+  if(prev){
+    var d=res.total-prev.total;
+    chips.push('<span class="dchip '+(d>0?"up":(d<0?"down":""))+'">总分 '+(d>0?"+":"")+d+'</span>');
+    chips.push('<span class="dchip">'+_( "prog.sigCur", {label: LANG==="en"?prev.labelEn:prev.label} )+'</span>');
+  }else{
+    chips.push('<span class="dchip">'+_( "score.chipBase" )+'</span>');
+  }
+  var hit = res.total>=TARGET;
+  chips.push('<span class="dchip '+(hit?"up":"")+'">'+(LANG==="en"?"Pass line ":"达标线 ")+TARGET+' · '+(hit?_( "score.hit" ):(LANG==="en"?"short by "+ (TARGET-res.total):_( "score.diff", {d:TARGET-res.total} )))+'</span>');
+  $("scoreDelta").innerHTML = chips.join("");
+
+  $("dimList").innerHTML = DIMS.map(function(d){
+    var v = res.dims[d.id], pct = Math.round(v/25*100);
+    var pd = prev ? prev.dims[d.id] : null;
+    var deltaTxt = pd==null ? _( "score.dimFirst" ) : (v-pd>0 ? "+"+(v-pd)+_( "score.dimVs" ) : (v-pd<0 ? (v-pd)+_( "score.dimVs" ) : _( "score.dimFlat" )));
+    var weak = v<=15;
+    return '<div class="dim">'+
+      '<div class="top"><b>'+dimLabel(d.id)+'</b><span class="en">'+d.en+'</span><span class="sc">'+v+'<em> / 25</em></span></div>'+
+      '<div class="track"><i class="'+(weak?"weak":"")+'" data-w="'+pct+'"></i></div>'+
+      '<p class="fb">'+esc(LANG==="en"?d.desc:d.desc)+'　·　'+deltaTxt+'</p>'+
+    '</div>';
+  }).join("");
+  setTimeout(function(){
+    $("dimList").querySelectorAll(".track i").forEach(function(el){ el.style.width = el.getAttribute("data-w")+"%"; });
+  }, 150);
+
+  var order = DIMS.map(function(d){ return d.id; }).sort(function(a,b){ return res.dims[a]-res.dims[b]; });
+  var weak2 = order.slice(0,2), best = order[order.length-1];
+  var fixes = weak2.map(function(id,i){
+    var f=FIXES[id];
+    return '<div class="fix"><span class="idx">'+(i+1)+'</span><div><b>'+_(LANG==="en"?f.tEn:f.t)+'　<span style="color:#93a2b1;font-weight:500;font-size:12.5px">（'+dimLabel(id)+' '+res.dims[id]+'/25）</span></b><p>'+esc(LANG==="en"?f.dEn:f.d)+'</p></div></div>';
+  });
+  fixes.push('<div class="fix"><span class="idx" style="background:#e6f4f0;color:#127a67">✓</span><div><b>'+_( "score.holdLead" )+dimLabel(best)+_( "score.holdTail", {v:res.dims[best]} )+'</b><p>'+(LANG==="en"?HOLD[best+"En"]:HOLD[best])+'</p></div></div>');
+  $("fixList").innerHTML = '<h3 style="margin-top:4px">'+_( "score.fixH" )+' <span class="en" style="font-size:11px;color:#93a2b1;letter-spacing:.1em">'+_( "score.fixHEn" )+'</span></h3>'+fixes.join("");
+
+  renderCtx();
+}
+function countUp(el, to){
+  var from=0, t0=performance.now(), dur=820;
+  function step(t){
+    var p=clamp((t-t0)/dur,0,1), e=1-Math.pow(1-p,3);
+    el.textContent = Math.round(from+(to-from)*e);
+    if(p<1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+/* ===================== 进步曲线 ===================== */
+function renderProgress(){
+  var has = S.history.length>=2;
+  $("progBody").hidden = !has;
+  $("progEmpty").hidden = has;
+  if(!has){
+    $("progLede").textContent = _( "prog.ledeEmpty" );
+    $("progEmpty").innerHTML =
+      '<div class="empty">'+
+        '<div class="ico"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M3 17.5l5-5.2 3.6 3.4L21 6.4" fill="none" stroke="#4a86c8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="21" cy="6.4" r="2.1" fill="#2c5f8d"/></svg></div>'+
+        '<h3>'+_( "prog.emptyT" )+'</h3>'+
+        '<p>'+_( "prog.emptyD", {n:S.history.length||0} )+'</p>'+
+        '<div class="cta-row" style="justify-content:center">'+
+          '<button class="btn primary" id="btnDemoEmpty">'+_( "prog.demoBtn" )+'</button>'+
+          '<button class="btn ghost" data-go="question">'+_( "prog.repractice" )+'</button>'+
+        '</div>'+
+      '</div>';
+    var b=$("btnDemoEmpty"); if(b) b.onclick=function(){ loadDemo(); renderProgress(); };
+    return;
+  }
+
+  var series = S.history.slice();
+  var last = series[series.length-1], first = series[0];
+  var prev = series[series.length-2];
+  var delta = last.total - prev.total;
+  var totalDelta = last.total - first.total;
+  var ups = 0; for(var i=1;i<series.length;i++){ if(series[i].total>series[i-1].total) ups++; }
+
+  $("progLede").textContent = _( "prog.lede", {n:series.length, first:first.total, last:last.total} );
+
+  $("sigCards").innerHTML =
+    '<div class="card"><b>'+last.total+'</b><span>'+_( "prog.sigCur", {label: LANG==="en"?last.labelEn:last.label} )+'</span><em>'+(delta>0?"+"+delta:(delta<0?delta:_( "score.dimFlat" )))+'</em></div>'+
+    '<div class="card"><b>'+(totalDelta>0?"+"+totalDelta:String(totalDelta))+'</b><span>'+_( "prog.sigCum" )+'</span><em>'+_( "prog.sigCumSub", {n:series.length, ups:ups} )+'</em></div>'+
+    '<div class="card"><b>'+(last.total>=TARGET?_( "prog.sigTargetUp"):_( "score.diff", {d:TARGET-last.total} ))+'</b><span>'+_( "rule.rubric" )+' '+TARGET+'</span><em>'+(LANG==="en"?"Triggers downgrade & exit":"达标后触发降频与退场")+'</em></div>';
+
+  $("chartHolder").innerHTML = chartSVG(series, TARGET);
+  animateChart();
+
+  $("dBars").innerHTML = DIMS.map(function(d){
+    var v = last.dims[d.id], pd = prev.dims[d.id], df = v-pd;
+    return '<div class="dbar">'+
+      '<span class="dl">'+dimLabel(d.id)+'</span>'+
+      '<span class="dt"><i data-w="'+Math.round(v/25*100)+'"></i></span>'+
+      '<b>'+v+'</b>'+
+      '<em class="'+(df>0?"up":(df<0?"down":"flat"))+'">'+(df>0?"▲ +"+df:(df<0?"▼ "+df:"— 0"))+'</em>'+
+    '</div>';
+  }).join("");
+  setTimeout(function(){
+    $("dBars").querySelectorAll(".dt i").forEach(function(el){ el.style.width=el.getAttribute("data-w")+"%"; });
+  }, 140);
+
+  var order = DIMS.map(function(d){return d.id;}).sort(function(a,b){ return (last.dims[a]-prev.dims[a]) - (last.dims[b]-prev.dims[b]); });
+  var down = order[0], up = order[order.length-1];
+  $("cmpNote").innerHTML =
+    '<svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true"><path d="M2 12l4-4 3 2.6L14 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>'+
+    '<div><b>'+_( "prog.cmpTitle" )+'</b>'+_( "prog.cmpBody", { role:roleLabel(roleObj()), up:dimLabel(up), down:dimLabel(down) } )+'</div>';
+
+  renderCtx();
+}
+function chartSVG(series, target){
+  var W=720, H=250, pl=44, pr=58, pt=30, pb=42;
+  var vals = series.map(function(s){ return s.total; }).concat([target]);
+  var lo = Math.max(30, Math.floor((Math.min.apply(null,vals)-10)/5)*5);
+  var hi = 100;
+  function X(i){ return series.length===1 ? pl : pl + (W-pl-pr)*i/(series.length-1); }
+  function Y(v){ return pt + (H-pt-pb)*(1-(v-lo)/(hi-lo)); }
+  var out = ['<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="同标准练习得分曲线">'];
+  out.push('<defs><linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a86c8" stop-opacity=".22"/><stop offset="1" stop-color="#4a86c8" stop-opacity="0"/></linearGradient></defs>');
+  for(var g=0; g<5; g++){
+    var v = lo + (hi-lo)*g/4, y = Y(v);
+    out.push('<line x1="'+pl+'" y1="'+y.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+y.toFixed(1)+'" stroke="#eef2f7" stroke-width="1"/>');
+    out.push('<text x="'+(pl-10)+'" y="'+(y+3.6).toFixed(1)+'" font-size="10.5" fill="#a9b6c3" text-anchor="end">'+Math.round(v)+'</text>');
+  }
+  var ty = Y(target);
+  out.push('<line x1="'+pl+'" y1="'+ty.toFixed(1)+'" x2="'+(W-pr)+'" y2="'+ty.toFixed(1)+'" stroke="#127a67" stroke-width="1.2" stroke-dasharray="6 5" opacity=".75"/>');
+  out.push('<text x="'+(W-pr+8)+'" y="'+(ty+3.6).toFixed(1)+'" font-size="10.5" fill="#127a67" font-weight="600">'+(LANG==="en"?"Pass ":"达标 ")+target+'</text>');
+  var pts = series.map(function(s,i){ return { x:X(i), y:Y(s.total), s:s }; });
+  var d = smooth(pts);
+  out.push('<path d="'+d+' L'+pts[pts.length-1].x.toFixed(1)+','+(H-pb)+' L'+pts[0].x.toFixed(1)+','+(H-pb)+' Z" fill="url(#area)" opacity="0"/>');
+  out.push('<path id="linePath" d="'+d+'" fill="none" stroke="#2c5f8d" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>');
+  pts.forEach(function(p,i){
+    var isLast = i===pts.length-1;
+    if(isLast) out.push('<circle cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="12" fill="#2c5f8d" opacity=".10"><animate attributeName="r" values="9;15;9" dur="2.6s" repeatCount="indefinite"/></circle>');
+    out.push('<circle class="pt" cx="'+p.x.toFixed(1)+'" cy="'+p.y.toFixed(1)+'" r="'+(isLast?6:4.4)+'" fill="#fff" stroke="#2c5f8d" stroke-width="2.4"/>');
+    out.push('<text class="pt" x="'+p.x.toFixed(1)+'" y="'+(p.y-13).toFixed(1)+'" font-size="'+(isLast?13:11.5)+'" font-weight="'+(isLast?750:600)+'" fill="#1f4a70" text-anchor="middle">'+p.s.total+'</text>');
+    out.push('<text x="'+p.x.toFixed(1)+'" y="'+(H-pb+22).toFixed(1)+'" font-size="11" fill="#93a2b1" text-anchor="middle">'+esc(LANG==="en"?p.s.labelEn:p.s.label)+'</text>');
+    out.push('<text x="'+p.x.toFixed(1)+'" y="'+(H-pb+37).toFixed(1)+'" font-size="9.5" fill="#c3ccd6" text-anchor="middle">#'+(i+1)+'</text>');
+  });
+  out.push('</svg>');
+  return out.join("");
+}
+function smooth(pts){
+  var d = "M"+pts[0].x.toFixed(1)+","+pts[0].y.toFixed(1);
+  for(var i=0;i<pts.length-1;i++){
+    var p0=pts[i-1]||pts[i], p1=pts[i], p2=pts[i+1], p3=pts[i+2]||p2;
+    var c1x=p1.x+(p2.x-p0.x)/6, c1y=p1.y+(p2.y-p0.y)/6;
+    var c2x=p2.x-(p3.x-p1.x)/6, c2y=p2.y-(p3.y-p1.y)/6;
+    d += " C"+c1x.toFixed(1)+","+c1y.toFixed(1)+" "+c2x.toFixed(1)+","+c2y.toFixed(1)+" "+p2.x.toFixed(1)+","+p2.y.toFixed(1);
+  }
+  return d;
+}
+function animateChart(){
+  var p = $("linePath"); if(!p) return;
+  var area = p.previousElementSibling;
+  try{
+    var L = p.getTotalLength();
+    p.style.strokeDasharray = L; p.style.strokeDashoffset = L;
+    requestAnimationFrame(function(){
+      p.style.transition = "stroke-dashoffset 1.4s cubic-bezier(.25,.7,.3,1)";
+      p.style.strokeDashoffset = 0;
+      if(area){ area.style.transition="opacity .9s ease .5s"; area.style.opacity=1; }
+    });
+  }catch(e){}
+  var pts = document.querySelectorAll("#chartHolder .pt");
+  pts.forEach(function(el,i){
+    el.style.opacity=0; el.style.transition="opacity .3s ease";
+    setTimeout(function(){ el.style.opacity=1; }, 260+i*160);
+  });
+}
+
+/* ===================== 退场 ===================== */
+function passCount(){
+  var n = 0;
+  for(var i=S.history.length-1;i>=0;i--){ if(S.history[i].total>=TARGET) n++; else break; }
+  return n;
+}
+function renderStepback(){
+  var n = passCount(), need = PASS_NEED;
+  var C = 2*Math.PI*62;
+  var arc = $("gateArc");
+  arc.setAttribute("stroke-dasharray", C);
+  setTimeout(function(){
+    arc.style.transition = "stroke-dashoffset 1s cubic-bezier(.2,.7,.25,1)";
+    arc.setAttribute("stroke-dashoffset", (C - C*clamp(n/need,0,1)).toFixed(1));
+  }, 80);
+  $("gateNum").textContent = n+"/"+need;
+
+  var hit = n>=need;
+  $("gateHead").textContent = hit ? _( "sb.gateHit" ) : _( "sb.gateNoHit", {n:n, need:need} );
+  $("gateSub").textContent = hit
+    ? _( "sb.gateSubHit", {n:n, t:TARGET} )
+    : _( "sb.gateSubNoHit", {need:need} );
+
+  var rows = [
+    { on:hit, t:_( "sb.rule1", {need:need, t:TARGET} ), d:_( "sb.rule1d", {t:TARGET} ) },
+    { on:hit, t:_( "sb.rule2" ), d:_( "sb.rule2d" ) },
+    { on:hit, t:_( "sb.rule3" ), d:_( "sb.rule3d" ) }
+  ];
+  $("ruleList").innerHTML = rows.map(function(r){
+    return '<div class="rulerow'+(r.on?" hit":"")+'"><span class="st"></span><div><b>'+r.t+'</b><p>'+r.d+'</p></div></div>';
+  }).join("");
+
+  $("swRemind").classList.toggle("on", !!S.reminder);
+  $("swRemind").setAttribute("aria-checked", S.reminder ? "true" : "false");
+  syncToggles();
+}
+function endCycle(){
+  var s = S.history.slice();
+  var box = $("cycleResult");
+  if(s.length===0){
+    box.innerHTML = '<div class="diag"><p class="lead">'+_( "cyc.emptyLead" )+'</p><p class="big">'+_( "cyc.emptyBig" )+'</p><p>'+_( "cyc.emptyD" )+'</p></div>';
+    box.hidden = false; return;
+  }
+  var last = s[s.length-1], first = s[0];
+  var all = DIMS.map(function(d){ return { label:d, labelEn:d.en, df: last.dims[d.id] - first.dims[d.id] }; });
+  var up = all.filter(function(x){ return x.df>0; }).sort(function(a,b){ return b.df-a.df; });
+  var rest = all.filter(function(x){ return x.df<=0; });
+  var total = last.total - first.total;
+  box.innerHTML =
+    '<div class="diag">'+
+      '<p class="lead">'+_( "cyc.lead" )+'</p>'+
+      '<p class="big">'+_( "cyc.big", {first:first.total, last:last.total, n:s.length} )+'</p>'+
+      '<p>'+_( "cyc.dTotal", {d:(total>0?"+":"")+total} )+
+        (rest.length
+          ? (up.length ? _( "cyc.up", {x:up.map(function(x){return dimLabel(x.label.id);}).join("、")} ) : '')+
+            _( "cyc.rest", {x:rest.map(function(x){return dimLabel(x.label.id);}).join("、")} )
+          : _( "cyc.allup" ))+
+      '</p>'+
+      '<div class="kv">'+
+        '<div><span>'+_( "cyc.kvRole" )+'</span><b>'+esc(roleLabel(roleObj()))+'</b></div>'+
+        '<div><span>'+_( "cyc.kvN" )+'</span><b>'+s.length+'</b></div>'+
+        '<div><span>'+_( "cyc.kvState" )+'</span><b>'+(last.total>=TARGET?_( "cyc.pass" ):_( "cyc.fail" ))+'</b></div>'+
+      '</div>'+
+      '<p style="margin-top:16px;font-size:12.5px;color:#6b7a8a">'+_( "cyc.end" )+'</p>'+
+      '<div class="cta-row" style="margin-top:18px">'+
+        '<button class="btn ghost" data-go="progress">'+_( "cyc.back" )+'</button>'+
+        '<button class="btn quiet" id="btnRestart">'+_( "cyc.restart" )+'</button>'+
+      '</div>'+
+    '</div>';
+  box.hidden = false;
+  box.scrollIntoView({ behavior:"smooth", block:"nearest" });
+  $("btnRestart").onclick = restartCycle;
+}
+function restartCycle(){
+  S.answer = ""; S.answerEn=""; S.score = null; S.question = null; S.gap = null; S.history = []; S.reminder = false;
+  $("cycleResult").hidden = true;
+  save(); renderCtx(); syncToggles();
+  toast( _( "toast.newCycle" ) );
+  go("diagnose");
+}
+
+/* ===================== 演示数据 ===================== */
+function loadDemo(){
+  S.demo = true;
+  if(!S.bg && !S.bgEn){ S.bg = roleObj().bg; S.bgEn = roleObj().bgEn; }
+  if(!S.gap) S.gap = "evidence";
+  if(!S.question) S.question = { role:S.role, main:qMain(roleObj()), follow:qFollow(roleObj()).slice(), why:qWhy(roleObj()), code:roleObj().code+"-014" };
+  if(!S.answer && !S.answerEn){ S.answer = roleObj().ex; S.answerEn = roleObj().exEn; }
+  var res = scoreAnswer(S.answer, S.role);
+  var today = new Date();
+  var label = (today.getMonth()+1)+"/"+String(today.getDate()).padStart(2,"0");
+  var hist = DEMO_HISTORY.map(function(h){ return { label:h.label, labelEn:h.labelEn, total:h.total, dims:JSON.parse(JSON.stringify(h.dims)) }; });
+  res.baseline = snapshotEntry(hist[hist.length-1]);
+  hist.push({ label:label, labelEn:label, total:res.total, dims:JSON.parse(JSON.stringify(res.dims)) });
+  S.history = hist;
+  S.score = res;
+  save(); renderCtx(); syncToggles();
+  toast( _( "toast.demo", {n:hist.length, m:hist.length-1} ) );
+}
+
+/* ===================== 演示开关同步 ===================== */
+function syncToggles(){
+  var d=$("dotFail"), dm=$("dotDemo"), ds=$("dotSaved");
+  if(d) d.classList.toggle("on", !!S.failNext);
+  if(dm) dm.classList.toggle("on", !!S.demo);
+  var sf=$("swFail"), sd=$("swDemo");
+  if(sf){ sf.classList.toggle("on", !!S.failNext); sf.setAttribute("aria-checked", S.failNext ? "true":"false"); }
+  if(sd){ sd.classList.toggle("on", !!S.demo); sd.setAttribute("aria-checked", S.demo ? "true":"false"); }
+  if(ds){
+    var has = S.history.length>0 || !!S.answer || !!S.answerEn;
+    ds.classList.toggle("on", has);
+    $("savedInfo").textContent = has
+      ? (_( "dr.t3t" )+"："+S.history.length+" · "+(S.score ? (LANG==="en"?"this rep ":"本次 ")+S.score.total : ""))
+      : "暂无保存的进度";
+  }
+}
+
+/* ===================== 抽屉 ===================== */
+function openDrawer(){
+  $("drawer").classList.add("on"); $("drawer").setAttribute("aria-hidden","false");
+  $("scrim").classList.add("on"); syncToggles();
+  setTimeout(function(){ $("btnDrawerClose").focus(); }, 60);
+}
+function closeDrawer(){
+  $("drawer").classList.remove("on"); $("drawer").setAttribute("aria-hidden","true");
+  $("scrim").classList.remove("on");
+}
+
+/* ===================== 事件绑定 ===================== */
+document.addEventListener("click", function(e){
+  var langBtn = e.target.closest(".lang-switch button");
+  if(langBtn){ setLang(langBtn.getAttribute("data-lang")); return; }
+  var g = e.target.closest("[data-go]");
+  if(g){ e.preventDefault(); go(g.getAttribute("data-go")); return; }
+  var rc = e.target.closest("[data-role]");
+  if(rc){ S.role = rc.getAttribute("data-role"); S.question=null; save(); renderDiagnose(); renderCtx(); return; }
+  var gp = e.target.closest("[data-gap]");
+  if(gp){ S.gap = gp.getAttribute("data-gap"); save(); renderDiagnose(); renderCtx(); }
+});
+document.addEventListener("keydown", function(e){ if(e.key==="Escape"){ closeDrawer(); closeAuth(); } });
+
+$("btnHome").onclick = function(){ go("home"); };
+$("btnDrawer").onclick = openDrawer;
+$("btnDrawerClose").onclick = closeDrawer;
+$("scrim").onclick = closeDrawer;
+
+$("btnFillBg").onclick = function(){
+  var r=roleObj();
+  if(LANG==="en"){ $("bgInput").value = r.bgEn; S.bgEn = r.bgEn; } else { $("bgInput").value = r.bg; S.bg = r.bg; }
+  save(); toast( _( "toast.bg" ) );
+};
+$("bgInput").addEventListener("input", function(){ if(LANG==="en"){ S.bgEn=this.value; } else { S.bg=this.value; } save(); renderCtx(); });
+
+$("btnDiagnose").onclick = function(){
+  if(!S.gap){
+    showErr("diagErr",_( "diag.errT" ),_( "diag.errD" ));
+    $("gapList").scrollIntoView({ behavior:"smooth", block:"center" });
+    return;
+  }
+  hideErr("diagErr");
+  renderDiagResult(true); renderCtx();
+};
+
+$("btnRetryQ").onclick = function(){ genQuestion(); };
+$("btnSwapQ").onclick = function(){ genQuestion(); };
+
+$("answerInput").addEventListener("input", syncAnswer);
+
+$("btnSample").onclick = function(){
+  var r=roleObj();
+  if(LANG==="en"){ $("answerInput").value = r.exEn; S.answerEn = r.exEn; } else { $("answerInput").value = r.ex; S.answer = r.ex; }
+  syncAnswer();
+  toast( _( "toast.sample" ) );
+};
+$("btnClear").onclick = function(){
+  $("answerInput").value = ""; syncAnswer(); $("answerInput").focus();
+};
+
+$("btnMic").onclick = function(){
+  var b = this;
+  if(micTimer){
+    clearInterval(micTimer); micTimer=null;
+    b.classList.remove("rec"); b.setAttribute("aria-pressed","false");
+    $("micLabel").textContent = _( "ans.mic" );
+    return;
+  }
+  b.classList.add("rec"); b.setAttribute("aria-pressed","true");
+  $("micLabel").textContent = (LANG==="en"?"Recording… tap to stop":"正在录音… 点击结束");
+  var t = 0;
+  micTimer = setInterval(function(){
+    t++;
+    $("micLabel").textContent = (LANG==="en"?"Recording "+t+"s · tap to stop":"正在录音 "+t+"s · 点击结束");
+    if(t>=4){
+      clearInterval(micTimer); micTimer=null;
+      b.classList.remove("rec"); b.setAttribute("aria-pressed","false");
+      $("micLabel").textContent = _( "ans.mic" );
+      var r=roleObj();
+      $("answerInput").value = (LANG==="en")?r.exEn:r.ex; syncAnswer();
+      toast( _( "toast.mic" ) );
+    }
+  }, 1000);
+};
+
+$("btnScore").onclick = function(){
+  var n = $("answerInput").value.replace(/\s/g,"").length;
+  if(n<30){
+    showErr("ansErr",_( "ans.errT" ),_( "ans.errD" ));
+    $("answerInput").classList.add("bad"); $("answerInput").focus();
+    return;
+  }
+  if(n>900){
+    showErr("ansErr",_( "ans.errLongT" ),_( "ans.errLongD", {n:n} ));
+    return;
+  }
+  hideErr("ansErr"); $("answerInput").classList.remove("bad");
+  stopAnswerTimer();
+  var txt = $("answerInput").value;
+  if(LANG==="en"){ S.answerEn = txt; } else { S.answer = txt; }
+  var res = scoreAnswer(txt, S.role);
+  var today = new Date();
+  var label = (today.getMonth()+1)+"/"+String(today.getDate()).padStart(2,"0");
+  var h = S.history.slice();
+  res.baseline = snapshotEntry(h.length ? h[h.length-1] : null);
+  h.push({ label:label, labelEn:label, total:res.total, dims:JSON.parse(JSON.stringify(res.dims)) });
+  S.history = h;
+  S.score = res;
+  save(); syncToggles();
+  toast( _( "toast.scored" ) );
+  go("score");
+};
+
+$("btnNextRep").onclick = function(){ go("question", true); };
+$("btnEndCycle").onclick = endCycle;
+
+$("swRemind").onclick = function(){
+  S.reminder = !S.reminder; save();
+  this.classList.toggle("on", S.reminder); this.setAttribute("aria-checked", S.reminder ? "true":"false");
+  toast(S.reminder ? _( "toast.remindOn" ) : _( "toast.remindOff" ) );
+};
+$("swFail").onclick = function(){
+  S.failNext = !S.failNext; save(); syncToggles();
+  toast(S.failNext ? _( "toast.failOn" ) : _( "toast.failOff" ) );
+};
+$("swDemo").onclick = function(){
+  if(S.demo){ S.demo = false; save(); syncToggles(); toast( _( "toast.demoOff" ) ); }
+  else loadDemo();
+};
+$("btnWipe").onclick = function(){
+  wipe();
+  S = { role:"pm", bg:"", bgEn:"", gap:null, question:null, answer:"", answerEn:"", score:null, history:[], demo:false, failNext:false, reminder:false };
+  renderHome(); renderDiagnose(); renderCtx(); syncToggles();
+  $("answerInput").value = ""; $("cycleResult").hidden = true;
+  go("home");
+  toast( _( "toast.wiped" ) );
+};
+
+/* ===================== 登录 / 注册（演示用，无后端） ===================== */
+var AUTH = (function(){
+  try{ return JSON.parse(localStorage.getItem("reps-auth") || "null") || { user:"" }; }
+  catch(e){ return { user:"" }; }
+})();
+var authMode = "login";
+
+function saveAuth(){ try{ localStorage.setItem("reps-auth", JSON.stringify(AUTH)); }catch(e){} }
+
+function renderAuth(){
+  var b = $("btnAuth");
+  if(!b) return;
+  var label = b.querySelector("span");
+  if(label) label.textContent = AUTH.user ? _( "auth.hi", { user:AUTH.user } ) : _( "auth.btn" );
+  b.classList.toggle("on", !!AUTH.user);
+  b.setAttribute("title", AUTH.user ? _( "auth.logoutTitle" ) : _( "auth.btn" ));
+}
+
+function setAuthTab(m){
+  authMode = m;
+  document.querySelectorAll("[data-authtab]").forEach(function(b){
+    b.classList.toggle("on", b.getAttribute("data-authtab")===m);
+  });
+  var s = $("authSubmit");
+  if(s) s.textContent = (m==="register") ? _( "auth.submitRegister" ) : _( "auth.submitLogin" );
+}
+
+function openAuth(){
+  setAuthTab("login");
+  $("authScrim").classList.add("on");
+  $("authModal").classList.add("on");
+  $("authModal").setAttribute("aria-hidden","false");
+  var u = $("authUser"); if(u) u.focus();
+}
+function closeAuth(){
+  $("authScrim").classList.remove("on");
+  $("authModal").classList.remove("on");
+  $("authModal").setAttribute("aria-hidden","true");
+}
+
+function submitAuth(mode){
+  var u = ($("authUser").value || "").trim();
+  var p = ($("authPass").value || "");
+  if(!u){ toast( _( "auth.errUser" ) ); $("authUser").focus(); return; }
+  if(p.length < 6){ toast( _( "auth.errPass" ) ); $("authPass").focus(); return; }
+  AUTH.user = u; saveAuth(); renderAuth(); closeAuth();
+  $("authUser").value = ""; $("authPass").value = "";
+  toast( mode==="register" ? _( "auth.toastRegister", { user:u } ) : _( "auth.toastLogin", { user:u } ) );
+}
+
+$("btnAuth").onclick = function(){
+  if(AUTH.user){ AUTH.user = ""; saveAuth(); renderAuth(); toast( _( "auth.toastLogout" ) ); }
+  else openAuth();
+};
+$("authClose").onclick  = closeAuth;
+$("authScrim").onclick  = closeAuth;
+$("authSubmit").onclick = function(){ submitAuth(authMode); };
+document.querySelectorAll("[data-authtab]").forEach(function(b){
+  b.onclick = function(){ setAuthTab( b.getAttribute("data-authtab") ); };
+});
+$("authPass").addEventListener("keydown", function(e){ if(e.key==="Enter") submitAuth(authMode); });
+
+/* ===================== 初始化 ===================== */
+(function init(){
+  var had = load();
+  setLang(LANG);
+  renderHome(); renderDiagnose(); renderCtx(); syncToggles(); renderStepper("home");
+  $("btnResumeHome").onclick = function(){ go(S.score ? "progress" : "home"); };
+  if(S.question && S.question.main) $("aQText").textContent = S.question.main;
+  if(had) toast( _( "toast.restored" ) );
+})();
+
+})();
+</script>
+</body>
+</html>
